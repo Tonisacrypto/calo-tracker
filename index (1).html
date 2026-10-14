@@ -1,0 +1,3471 @@
+<!DOCTYPE html>
+<html lang="vi"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f766e">
+  <title>NutriChat AI — 1500 Kcal, Nhập Bằng Ảnh AI &amp; Google Sheets</title>
+  <style>
+    :root {
+      --bg: #f3f7f6;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --primary: #0f766e;
+      --primary-light: #ccfbf1;
+      --primary-dark: #115e59;
+      --accent: #0284c7;
+      --protein: #e11d48;
+      --protein-bg: #ffe4e6;
+      --carbs: #d97706;
+      --carbs-bg: #fef3c7;
+      --fat: #7c3aed;
+      --fat-bg: #ede9fe;
+      --fiber: #16a34a;
+      --fiber-bg: #dcfce7;
+      --burn: #ea580c;
+      --burn-bg: #ffedd5;
+      --water: #0284c7;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 84px;
+    }
+
+    .app-header {
+      background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+      color: #fff;
+      padding: 14px 16px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 12px rgba(15, 118, 110, 0.2);
+    }
+
+    .header-top {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .brand h1 {
+      font-size: 1.08rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .brand p {
+      font-size: 0.74rem;
+      opacity: 0.9;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .sheet-link-btn {
+      background: #ffffff;
+      color: var(--primary-dark);
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 11px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      transition: transform 0.15s;
+    }
+
+    .sheet-link-btn:hover {
+      transform: translateY(-1px);
+      background: #f0fdf4;
+    }
+
+    .api-pill-btn {
+      background: rgba(15, 23, 42, 0.28);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 11px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .api-pill-btn.connected {
+      background: #ecfdf5;
+      color: #065f46;
+      border-color: #6ee7b7;
+    }
+
+    .date-controls {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.16);
+      padding: 4px 8px;
+      border-radius: 999px;
+      backdrop-filter: blur(6px);
+    }
+
+    .date-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    .date-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    #currentDateInput {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.84rem;
+      cursor: pointer;
+      outline: none;
+      text-align: center;
+    }
+
+    #currentDateInput::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+
+    .week-strip {
+      max-width: 1180px;
+      margin: 10px auto 0;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .week-day {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 5px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+
+    .week-day.active {
+      background: #ffffff;
+      color: var(--primary-dark);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+
+    .week-day .day-name {
+      font-size: 0.66rem;
+      opacity: 0.85;
+      display: block;
+    }
+
+    .week-day .day-num {
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .week-day .day-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin: 3px auto 0;
+      background: transparent;
+    }
+
+    .week-day.has-data .day-dot {
+      background: #34d399;
+    }
+
+    .week-day.active.has-data .day-dot {
+      background: var(--primary);
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 16px auto;
+      padding: 0 14px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 920px) {
+      .container {
+        grid-template-columns: 400px 1fr;
+        align-items: start;
+      }
+      .left-column {
+        position: sticky;
+        top: 122px;
+      }
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      font-size: 0.93rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    /* Prominent Photo Scanner Banner Card */
+    .photo-scanner-banner {
+      background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
+      border: 1.5px dashed #0d9488;
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .photo-scanner-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .photo-scanner-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .photo-btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .photo-action-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(15, 118, 110, 0.2);
+      transition: all 0.15s;
+    }
+
+    .photo-action-btn.secondary {
+      background: #ffffff;
+      color: var(--primary-dark);
+      border: 1px solid #99f6e4;
+    }
+
+    .photo-action-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    /* Activity Mode Switcher */
+    .mode-switcher {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: #f1f5f9;
+      padding: 5px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .mode-btn {
+      border: none;
+      background: transparent;
+      padding: 8px 6px;
+      border-radius: 9px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    .mode-btn.active.rest-mode {
+      background: #ffffff;
+      color: var(--primary-dark);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    }
+
+    .mode-btn.active.gym-mode {
+      background: var(--burn);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.28);
+    }
+
+    .diet-hint-banner {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.75rem;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .diet-hint-banner.gym {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      color: #9a3412;
+    }
+
+    .calorie-hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ring-wrap {
+      position: relative;
+      width: 114px;
+      height: 114px;
+      flex-shrink: 0;
+    }
+
+    .ring-svg {
+      transform: rotate(-90deg);
+      width: 114px;
+      height: 114px;
+    }
+
+    .ring-bg {
+      fill: none;
+      stroke: #e2e8f0;
+      stroke-width: 10;
+    }
+
+    .ring-progress {
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 10;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.4s ease, stroke 0.3s ease;
+    }
+
+    .ring-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .ring-cal-remain {
+      font-size: 1.25rem;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--text);
+    }
+
+    .ring-cal-label {
+      font-size: 0.66rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .cal-stats-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 7px;
+    }
+
+    .cal-stat-box {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 9px;
+    }
+
+    .cal-stat-box .lbl {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      display: block;
+    }
+
+    .cal-stat-box .val {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .macros-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    .macro-item {
+      background: var(--surface-soft);
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .macro-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.76rem;
+      margin-bottom: 5px;
+    }
+
+    .macro-name {
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .macro-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .macro-vals {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .macro-vals strong {
+      color: var(--text);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 7px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.35s ease;
+    }
+
+    .quick-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    .metric-box {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 9px 10px;
+    }
+
+    .metric-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .water-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .water-val {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--water);
+    }
+
+    .btn-mini {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-mini:hover {
+      background: #bae6fd;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      padding: 6px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 8px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(15, 118, 110, 0.25);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Chat Box */
+    .chat-box {
+      display: flex;
+      flex-direction: column;
+      height: 430px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      background: var(--surface-soft);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg {
+      max-width: 88%;
+      padding: 10px 13px;
+      border-radius: 14px;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      word-wrap: break-word;
+    }
+
+    .msg.bot {
+      align-self: flex-start;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: var(--primary);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-photo {
+      max-width: 180px;
+      max-height: 140px;
+      border-radius: 8px;
+      display: block;
+      margin-bottom: 6px;
+      object-fit: cover;
+    }
+
+    .parsed-card {
+      margin-top: 8px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.79rem;
+    }
+
+    .parsed-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .parsed-row:last-child {
+      border-bottom: none;
+    }
+
+    .macro-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 99px;
+    }
+
+    .pill.p { background: var(--protein-bg); color: var(--protein); }
+    .pill.c { background: var(--carbs-bg); color: var(--carbs); }
+    .pill.f { background: var(--fat-bg); color: var(--fat); }
+    .pill.fib { background: var(--fiber-bg); color: var(--fiber); }
+
+    .quick-chips-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 6px 0 8px;
+      scrollbar-width: none;
+    }
+
+    .quick-chips-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      flex-shrink: 0;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .chip:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+    }
+
+    .chat-input-bar {
+      display: flex;
+      gap: 7px;
+      margin-top: 8px;
+      align-items: center;
+    }
+
+    .meal-select {
+      padding: 9px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      font-size: 0.79rem;
+      font-weight: 600;
+      color: var(--text);
+      outline: none;
+    }
+
+    .chat-text-input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-size: 0.86rem;
+      outline: none;
+    }
+
+    .chat-text-input:focus {
+      border-color: var(--primary);
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      color: var(--text);
+      font-size: 1.05rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .send-btn {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      font-weight: 700;
+      padding: 0 14px;
+      width: auto;
+      font-size: 0.84rem;
+    }
+
+    /* Meal Groups */
+    .meal-group {
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .meal-group-header {
+      background: var(--surface-soft);
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 0.84rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .log-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.83rem;
+    }
+
+    .log-item:last-child {
+      border-bottom: none;
+    }
+
+    .log-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .log-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .log-info-title {
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .log-info-sub {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .log-item-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .log-kcal {
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: var(--primary-dark);
+    }
+
+    .action-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 7px;
+      cursor: pointer;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .action-btn:hover {
+      background: #f1f5f9;
+      color: var(--text);
+    }
+
+    .mode-compare-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    @media (min-width: 680px) {
+      .mode-compare-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .mode-card {
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      background: var(--surface-soft);
+      transition: all 0.2s;
+    }
+
+    .mode-card.selected {
+      border-color: var(--primary);
+      background: #f0fdf4;
+    }
+
+    .mode-card.gym-card.selected {
+      border-color: var(--burn);
+      background: #fff7ed;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    .data-table th, .data-table td {
+      padding: 8px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table th {
+      background: var(--surface-soft);
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.73rem;
+    }
+
+    .badge-goal {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 99px;
+      font-weight: 700;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.58);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 14px;
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      max-width: 560px;
+      width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 18px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.22);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 8px 13px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .photo-preview-box {
+      width: 100%;
+      max-height: 200px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #0f172a;
+      margin-bottom: 10px;
+    }
+
+    .ai-detected-list {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 0.8rem;
+      display: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 14px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header & Calendar Strip -->
+  <header class="app-header">
+    <div class="header-top">
+      <div class="brand">
+        <div class="brand-icon">🥗</div>
+        <div>
+          <h1>NutriChat AI — 1.500 Kcal &amp; Nhập Bằng Ảnh</h1>
+          <p>Nhận diện Ảnh Đồ ăn bằng Gemini Vision • Calo Out 10k bước/Gym • Eo Hông 12 Tuần</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="api-pill-btn connected" id="headerApiBtn" onclick="openApiKeyModal()">🟢 AI Vision: Đã kết nối</button>
+        <a href="https://drive.google.com/file/d/1YQmV0vN46cqJG87udWJjSAlSyT68diCo/view?usp=drivesdk" target="_blank" rel="noopener" class="sheet-link-btn">
+          📊 Mở Google Sheets
+        </a>
+        <div class="date-controls">
+          <button class="date-btn" id="prevDayBtn" title="Ngày trước">◀</button>
+          <input type="date" id="currentDateInput">
+          <button class="date-btn" id="nextDayBtn" title="Ngày sau">▶</button>
+          <button class="date-btn" id="todayBtn" style="font-size:0.72rem;width:auto;padding:0 6px;font-weight:700;">Hôm nay</button>
+        </div>
+      </div>
+    </div>
+    <div class="week-strip" id="weekStrip"><div class="week-day  ">
+          <span class="day-name">CN</span>
+          <span class="day-num">11/10</span>
+          <div class="day-dot"></div>
+        </div><div class="week-day  ">
+          <span class="day-name">T2</span>
+          <span class="day-num">12/10</span>
+          <div class="day-dot"></div>
+        </div><div class="week-day  ">
+          <span class="day-name">T3</span>
+          <span class="day-num">13/10</span>
+          <div class="day-dot"></div>
+        </div><div class="week-day active has-data">
+          <span class="day-name">T4</span>
+          <span class="day-num">14/10</span>
+          <div class="day-dot"></div>
+        </div><div class="week-day  ">
+          <span class="day-name">T5</span>
+          <span class="day-num">15/10</span>
+          <div class="day-dot"></div>
+        </div><div class="week-day  ">
+          <span class="day-name">T6</span>
+          <span class="day-num">16/10</span>
+          <div class="day-dot"></div>
+        </div><div class="week-day  ">
+          <span class="day-name">T7</span>
+          <span class="day-num">17/10</span>
+          <div class="day-dot"></div>
+        </div></div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Left Column: Daily 1,500 kcal Summary + 2 Activity Modes + Water -->
+    <section class="left-column">
+      <div class="card">
+        <div class="card-title">
+          <span>Chế độ Hoạt động Hôm nay</span>
+          <span class="badge-goal" id="goalBadgeText">Mục tiêu nạp: 1,500 kcal</span>
+        </div>
+
+        <!-- 2-Mode Activity Toggle (Non-Gym vs Gym 30-40p) -->
+        <div class="mode-switcher">
+          <button class="mode-btn rest-mode active" id="btnModeRest" onclick="setDayActivityMode('rest')">
+            🚶 Ngày Không Tập Gym<br><small style="font-weight:500;opacity:0.85;">10.000 bước (~350 kcal)</small>
+          </button>
+          <button class="mode-btn gym-mode " id="btnModeGym" onclick="setDayActivityMode('gym')">
+            🏋️‍♀️ Ngày Có Tập Gym<br><small style="font-weight:500;opacity:0.9;">10.000 bước + Gym 30-40p</small>
+          </button>
+        </div>
+
+        <div class="diet-hint-banner " id="dietHintBanner">🚶 <strong>Ngày Không Tập Gym (10.000 bước = 350 kcal):</strong> Tổng Calo Out ~1.820 kcal. Ăn <strong>1.500 kcal</strong> (Thâm hụt -320 kcal) • Đạm <strong>110g</strong> • Tinh bột <strong>140g</strong> (giảm nhẹ buổi tối) • Béo tốt <strong>55g</strong>.</div>
+
+        <div class="calorie-hero">
+          <div class="ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 120 120">
+              <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+              <circle class="ring-progress" id="calRingProgress" cx="60" cy="60" r="50" stroke-dasharray="314.16" stroke-dashoffset="314.16" style="stroke: var(--primary); stroke-dashoffset: 148.7;"></circle>
+            </svg>
+            <div class="ring-center">
+              <span class="ring-cal-remain" id="calRemainVal" style="color: var(--text);">710</span>
+              <span class="ring-cal-label" id="calRemainLabel">Còn lại / 1.500 kcal</span>
+            </div>
+          </div>
+
+          <div class="cal-stats-grid">
+            <div class="cal-stat-box">
+              <span class="lbl">🍽️ Calo Đã Nạp</span>
+              <span class="val" id="calIntakeVal">790 / 1,500</span>
+            </div>
+            <div class="cal-stat-box">
+              <span class="lbl">🔥 Calo Out Vận Động</span>
+              <span class="val" id="calActiveOutVal" style="color:var(--burn)">350 kcal</span>
+            </div>
+            <div class="cal-stat-box">
+              <span class="lbl">⚡ Tổng Calo Out (TDEE)</span>
+              <span class="val" id="calTotalOutVal">1,820 kcal</span>
+            </div>
+            <div class="cal-stat-box">
+              <span class="lbl">📉 Thâm Hụt Hôm Nay</span>
+              <span class="val" id="calDeficitVal" style="color:var(--primary)">-1,030 kcal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Macro Progress Bars -->
+        <div class="macros-grid">
+          <div class="macro-item">
+            <div class="macro-header">
+              <span class="macro-name"><span class="macro-dot" style="background:var(--protein)"></span>Đạm (Protein)</span>
+              <span class="macro-vals"><strong id="pCur">63.2</strong> / <span id="pTar">110</span>g</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="pBar" style="width: 57.4545%; background: var(--protein);"></div>
+            </div>
+          </div>
+
+          <div class="macro-item">
+            <div class="macro-header">
+              <span class="macro-name"><span class="macro-dot" style="background:var(--carbs)"></span>Tinh bột (Carbs)</span>
+              <span class="macro-vals"><strong id="cCur">133.9</strong> / <span id="cTar">140</span>g</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="cBar" style="width: 95.6429%; background: var(--carbs);"></div>
+            </div>
+          </div>
+
+          <div class="macro-item">
+            <div class="macro-header">
+              <span class="macro-name"><span class="macro-dot" style="background:var(--fat)"></span>Chất béo (Fat)</span>
+              <span class="macro-vals"><strong id="fCur">41.6</strong> / <span id="fTar">55</span>g</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="fBar" style="width: 75.6364%; background: var(--fat);"></div>
+            </div>
+          </div>
+
+          <div class="macro-item">
+            <div class="macro-header">
+              <span class="macro-name"><span class="macro-dot" style="background:var(--fiber)"></span>Chất xơ (Fiber)</span>
+              <span class="macro-vals"><strong id="fibCur">9</strong> / <span id="fibTar">25</span>g</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="fibBar" style="width: 36%; background: var(--fiber);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Water & Quick Sync to Google Sheets -->
+        <div class="quick-metrics">
+          <div class="metric-box">
+            <div class="metric-top">
+              <span>💧 Nước uống</span>
+              <span id="waterGlasses">1000 / 2000 ml</span>
+            </div>
+            <div class="water-controls">
+              <button class="btn-mini" onclick="addWater(-250)">-250</button>
+              <span class="water-val" id="waterVal">1000 ml</span>
+              <button class="btn-mini" onclick="addWater(250)">+250ml</button>
+            </div>
+          </div>
+
+          <div class="metric-box">
+            <div class="metric-top">
+              <span>☁️ Đồng bộ Samsung ↔ PC</span>
+              <span id="syncStatusBadge" style="font-size:0.68rem;color:var(--primary)">Chưa nối Cloud</span>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <button class="btn-mini" style="flex:1;background:#dcfce7;color:#166534;" onclick="syncDayToGoogleSheet()" title="Đẩy dữ liệu từ máy này lên Google Sheets &amp; Cloud">⬆️ Lưu lên Cloud</button>
+              <button class="btn-mini" style="flex:1;background:#e0f2fe;color:#0369a1;" onclick="pullStateFromCloud(false)" title="Tải dữ liệu mới nhất từ thiết bị kia về máy này">⬇️ Tải về máy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Column: 5 Interactive Tabs -->
+    <section class="right-column">
+      <div class="nav-tabs">
+        <button class="tab-btn" onclick="switchTab('chatTab', this)">📸 Nhập Ảnh &amp; Chat AI</button>
+        <button class="tab-btn" onclick="switchTab('diaryTab', this)">📋 Nhật ký Bữa ăn</button>
+        <button class="tab-btn" onclick="switchTab('caloOutTab', this)">🔥 Bảng Tính Calo Out</button>
+        <button class="tab-btn" onclick="switchTab('bodyTab', this)">📏 Đo Eo &amp; Hông Tuần</button>
+        <button class="tab-btn active" onclick="switchTab('sheetsTab', this)">📊 Google Sheet &amp; GitHub</button>
+      </div>
+
+      <!-- TAB 1: PROMINENT PHOTO MODE + CHAT TRACKING -->
+      <div id="chatTab" class="tab-panel">
+        <div class="card">
+          <!-- Dedicated Photo Mode Card -->
+          <div class="photo-scanner-banner">
+            <div class="photo-scanner-top">
+              <div class="photo-scanner-title">
+                <span>📸 Chế độ Nhập Bằng Ảnh Đồ Ăn (Gemini Vision AI)</span>
+              </div>
+              <button class="btn-mini" onclick="openApiKeyModal()" id="photoBannerKeyStatus" style="background: rgb(220, 252, 231); color: rgb(22, 101, 52);">🟢 Đã kết nối Gemini AI</button>
+            </div>
+            <p style="font-size:0.76rem;color:#334155;">
+              Chụp trực tiếp mâm cơm/món ăn trên Android hoặc chọn ảnh từ thư viện (hoặc nhấn <code>Ctrl+V</code> để dán ảnh). AI sẽ tự động nhận diện từng món, ước lượng số gram và tính Calo + Đạm/Tinh bột/Béo.
+            </p>
+            <input type="file" id="cameraCaptureInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoSelected(event)">
+            <input type="file" id="photoGalleryInput" accept="image/*" style="display:none" onchange="handlePhotoSelected(event)">
+            <div class="photo-btn-group">
+              <button class="photo-action-btn" onclick="document.getElementById('cameraCaptureInput').click()">
+                📸 Chụp Ảnh Bữa Ăn (Camera)
+              </button>
+              <button class="photo-action-btn secondary" onclick="document.getElementById('photoGalleryInput').click()">
+                🖼️ Chọn Ảnh từ Thư Viện
+              </button>
+            </div>
+          </div>
+
+          <div class="card-title" style="margin-bottom:6px;">
+            <span>💬 Hoặc Nhập Bằng Chữ / Chọn Món 1 Chạm</span>
+            <button class="action-btn" onclick="openManualModal()">+ Nhập thủ công</button>
+          </div>
+
+          <div class="quick-chips-bar" id="favoriteChips"><button class="chip">⚡ Bún chả cá Đà Nẵng (420 kcal)</button><button class="chip">⚡ Ức gà áp chảo (150g) (248 kcal)</button><button class="chip">⚡ Cơm gạo lứt (1 chén) (150 kcal)</button><button class="chip">⚡ Khoai lang luộc (150g) (130 kcal)</button><button class="chip">⚡ 2 Quả trứng luộc (156 kcal)</button><button class="chip">⚡ Sữa chua Hy Lạp + Chuối (183 kcal)</button></div>
+
+          <div class="chat-box">
+            <div class="chat-messages" id="chatMessages"><div class="msg bot"><div>Chào Kim Ánh! 👋 Mình đã cập nhật mục tiêu cố định <strong>1.500 kcal/ngày</strong>, tích hợp bộ chuyển đổi <strong>2 chế độ Calo Out</strong> (Đi bộ 10.000 bước cố định ± Tập Gym 30–40 phút), bảng <strong>Đo Eo &amp; Hông 12 tuần</strong> và kết nối trực tiếp với <strong>Google Sheets Dashboard</strong> của bạn!</div></div><div class="msg user"><div>bánh bao xá xíu</div></div><div class="msg bot"><div>Đã tính và lưu 1 món vào <strong>☀️ Bữa trưa</strong>:</div><div class="parsed-card">
+              <div class="parsed-row">
+                <span><strong>Bánh bao xá xíu</strong> <small style="color:var(--text-muted)">(1 khẩu phần)</small></span>
+                <strong style="color:var(--primary-dark)">+250 kcal</strong>
+              </div>
+              <div class="macro-pills">
+                <span class="pill p">Đạm: 15.6g</span>
+                <span class="pill c">Tinh bột: 28.1g</span>
+                <span class="pill f">Béo: 8.3g</span>
+                <span class="pill fib">Xơ: 3g</span>
+              </div>
+            </div></div><div class="msg user"><div>1 dĩa cơm tấm sườn trứng ít cơm, 1 miếng canh khổ qua độn thịt</div></div><div class="msg bot"><div>Đã tính và lưu 2 món vào <strong>☀️ Bữa trưa</strong>:</div><div class="parsed-card">
+              <div class="parsed-row">
+                <span><strong>Cơm tấm sườn bì chả</strong> <small style="color:var(--text-muted)">(1 dĩa (~420g))</small></span>
+                <strong style="color:var(--primary-dark)">+680 kcal</strong>
+              </div>
+              <div class="macro-pills">
+                <span class="pill p">Đạm: 32g</span>
+                <span class="pill c">Tinh bột: 78g</span>
+                <span class="pill f">Béo: 25g</span>
+                <span class="pill fib">Xơ: 3g</span>
+              </div>
+            
+              <div class="parsed-row">
+                <span><strong>1 miếng canh khổ qua độn thịt</strong> <small style="color:var(--text-muted)">(1 khẩu phần)</small></span>
+                <strong style="color:var(--primary-dark)">+250 kcal</strong>
+              </div>
+              <div class="macro-pills">
+                <span class="pill p">Đạm: 15.6g</span>
+                <span class="pill c">Tinh bột: 28.1g</span>
+                <span class="pill f">Béo: 8.3g</span>
+                <span class="pill fib">Xơ: 3g</span>
+              </div>
+            </div></div></div>
+
+            <div class="chat-input-bar">
+              <select id="mealTypeSelect" class="meal-select">
+                <option value="auto">Tự động</option>
+                <option value="breakfast">🌅 Bữa sáng</option>
+                <option value="lunch">☀️ Bữa trưa</option>
+                <option value="dinner">🌙 Bữa tối</option>
+                <option value="snack">🍎 Bữa phụ</option>
+              </select>
+
+              <button class="icon-btn" onclick="document.getElementById('photoGalleryInput').click()" title="Tải ảnh đồ ăn">📷</button>
+
+              <input type="text" id="chatInput" class="chat-text-input" placeholder="VD: 1 tô bún chả cá + 2 quả trứng luộc, hoặc 150g ức gà..." onkeydown="if(event.key==='Enter') handleChatSend()">
+              <button class="icon-btn send-btn" onclick="handleChatSend()">Gửi</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: DAILY DIARY & INLINE EDITOR -->
+      <div id="diaryTab" class="tab-panel">
+        <div class="card">
+          <div class="card-title">
+            <span>Chi tiết Khẩu phần trong Ngày (Mục tiêu: 1.500 kcal)</span>
+            <div style="display:flex;gap:6px;">
+              <button class="action-btn" onclick="copyYesterdayLogs()">📋 Sao chép hôm qua</button>
+              <button class="btn-mini" onclick="openManualModal()">+ Thêm món</button>
+            </div>
+          </div>
+          <div id="diaryMealsContainer"><div class="meal-group">
+          <div class="meal-group-header">
+            <span>🌅 Bữa sáng (0)</span>
+            <span style="color:var(--primary-dark)">0 kcal</span>
+          </div>
+          <div>
+        <div class="empty-state">Chưa có món nào</div></div></div><div class="meal-group">
+          <div class="meal-group-header">
+            <span>☀️ Bữa trưa (3)</span>
+            <span style="color:var(--primary-dark)">790 kcal</span>
+          </div>
+          <div>
+        
+              <div class="log-item">
+                <div class="log-item-left">
+                  
+                  <div style="min-width:0;">
+                    <div class="log-info-title">Bánh bao xá xíu</div>
+                    <div class="log-info-sub">
+                      <span>📏 1 khẩu phần</span>
+                      <span style="color:var(--protein)">P: 15.6g</span>
+                      <span style="color:var(--carbs)">C: 28.1g</span>
+                      <span style="color:var(--fat)">F: 8.3g</span>
+                      <span style="color:var(--fiber)">Xơ: 3g</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="log-item-right">
+                  <span class="log-kcal">250 kcal</span>
+                  <button class="action-btn" onclick="openEditItem('id_1791962033111_yowx')">✏️</button>
+                  <button class="action-btn" onclick="deleteItem('id_1791962033111_yowx')">🗑️</button>
+                </div>
+              </div>
+            
+              <div class="log-item">
+                <div class="log-item-left">
+                  
+                  <div style="min-width:0;">
+                    <div class="log-info-title">Cơm tấm sườn bì chả</div>
+                    <div class="log-info-sub">
+                      <span>📏 1 dĩa (~420g)</span>
+                      <span style="color:var(--protein)">P: 32g</span>
+                      <span style="color:var(--carbs)">C: 77.7g</span>
+                      <span style="color:var(--fat)">F: 25g</span>
+                      <span style="color:var(--fiber)">Xơ: 3g</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="log-item-right">
+                  <span class="log-kcal">420 kcal</span>
+                  <button class="action-btn" onclick="openEditItem('id_1791962083185_4k6j')">✏️</button>
+                  <button class="action-btn" onclick="deleteItem('id_1791962083185_4k6j')">🗑️</button>
+                </div>
+              </div>
+            
+              <div class="log-item">
+                <div class="log-item-left">
+                  
+                  <div style="min-width:0;">
+                    <div class="log-info-title">1 miếng canh khổ qua độn thịt</div>
+                    <div class="log-info-sub">
+                      <span>📏 1 khẩu phần</span>
+                      <span style="color:var(--protein)">P: 15.6g</span>
+                      <span style="color:var(--carbs)">C: 28.1g</span>
+                      <span style="color:var(--fat)">F: 8.3g</span>
+                      <span style="color:var(--fiber)">Xơ: 3g</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="log-item-right">
+                  <span class="log-kcal">120 kcal</span>
+                  <button class="action-btn" onclick="openEditItem('id_1791962083185_bjlq')">✏️</button>
+                  <button class="action-btn" onclick="deleteItem('id_1791962083185_bjlq')">🗑️</button>
+                </div>
+              </div>
+            </div></div><div class="meal-group">
+          <div class="meal-group-header">
+            <span>🍎 Bữa phụ / Trước &amp; Sau Tập (0)</span>
+            <span style="color:var(--primary-dark)">0 kcal</span>
+          </div>
+          <div>
+        <div class="empty-state">Chưa có món nào</div></div></div><div class="meal-group">
+          <div class="meal-group-header">
+            <span>🌙 Bữa tối (0)</span>
+            <span style="color:var(--primary-dark)">0 kcal</span>
+          </div>
+          <div>
+        <div class="empty-state">Chưa có món nào</div></div></div></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: DAILY ACTIVITY & CALORIE OUT CALCULATOR -->
+      <div id="caloOutTab" class="tab-panel">
+        <div class="card">
+          <div class="card-title">
+            <span>🔥 Bảng Tính Mức Hoạt Động &amp; Calo Out Trong Ngày</span>
+            <span class="badge-goal">Mục tiêu ăn: 1.500 kcal/ngày</span>
+          </div>
+
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px;">
+            Dựa trên thói quen cố định <strong>đi bộ 10.000 bước/ngày</strong> (~350 kcal) và tùy chọn <strong>tập Gym 30–40 phút</strong> (~180–240 kcal), bảng dưới đây giúp bạn chuyển đổi nhanh giữa 2 chế độ ngày và tự động tinh chỉnh tỷ lệ Đạm - Tinh bột - Béo trong cùng mức ngân sách <strong>1.500 kcal/ngày</strong>.
+          </p>
+
+          <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;">
+            <div style="font-size:0.84rem;font-weight:700;margin-bottom:8px;">⚙️ Tinh chỉnh Hoạt động của Ngày đang chọn (<span id="lblActivityDate">14/10/2026</span>)</div>
+            <div class="form-grid" style="margin-bottom:0;">
+              <div class="form-group">
+                <label>Chế độ ngày hoạt động</label>
+                <select id="actModeSelect" onchange="updateDayActivityFromForm()">
+                  <option value="rest">🚶 Ngày Không Tập Gym (Chỉ đi bộ 10.000 bước)</option>
+                  <option value="gym">🏋️‍♀️ Ngày Có Tập Gym (10.000 bước + Tập Gym)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Số bước đi bộ trong ngày (Mặc định: 10.000 bước)</label>
+                <input type="number" step="500" id="actStepsInput" value="10000" oninput="updateDayActivityFromForm()">
+              </div>
+              <div class="form-group">
+                <label>Thời lượng tập Gym: <strong id="lblGymMins">0</strong> phút (30–40p)</label>
+                <input type="range" min="0" max="60" step="5" id="actGymMinsSlider" value="35" oninput="updateDayActivityFromForm()">
+              </div>
+              <div class="form-group">
+                <label>BMR + Sinh hoạt cơ bản (trừ đi bộ &amp; Gym)</label>
+                <input type="number" id="actBaseBmrInput" value="1470" oninput="updateDayActivityFromForm()">
+              </div>
+            </div>
+          </div>
+
+          <div class="mode-compare-grid">
+            <div class="mode-card selected" id="cardCompareRest">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <strong style="font-size:0.9rem;color:var(--primary-dark)">🚶 Chế độ 1: Ngày Không Tập Gym</strong>
+                <button class="btn-mini" onclick="setDayActivityMode('rest')">Áp dụng</button>
+              </div>
+              <ul style="font-size:0.8rem;list-style:none;display:flex;flex-direction:column;gap:5px;">
+                <li>• <strong>Đi bộ 10.000 bước:</strong> Tiêu hao <strong>350 kcal</strong></li>
+                <li>• <strong>Tập Gym:</strong> 0 phút (0 kcal)</li>
+                <li>• <strong>BMR + Sinh hoạt nền:</strong> 1.470 kcal</li>
+                <li>• <strong>Tổng Calo Out (TDEE):</strong> <strong>1.820 kcal/ngày</strong></li>
+                <li>• <strong>Ngân sách Calo Nạp:</strong> <strong>1.500 kcal</strong> (Thâm hụt <strong>-320 kcal</strong>)</li>
+                <li style="margin-top:4px;padding-top:6px;border-top:1px dashed var(--border);">
+                  <strong>🎯 Tinh chỉnh Macro (1.500 kcal):</strong><br>
+                  <span style="color:var(--protein);font-weight:700;">Đạm: 110g</span> •
+                  <span style="color:var(--carbs);font-weight:700;">Tinh bột: 140g</span> •
+                  <span style="color:var(--fat);font-weight:700;">Béo: 55g</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="mode-card gym-card " id="cardCompareGym">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <strong style="font-size:0.9rem;color:var(--burn)">🏋️‍♀️ Chế độ 2: Ngày Có Tập Gym (30–40p)</strong>
+                <button class="btn-mini" style="background:var(--burn-bg);color:var(--burn)" onclick="setDayActivityMode('gym')">Áp dụng</button>
+              </div>
+              <ul style="font-size:0.8rem;list-style:none;display:flex;flex-direction:column;gap:5px;">
+                <li>• <strong>Đi bộ 10.000 bước:</strong> Tiêu hao <strong>350 kcal</strong></li>
+                <li>• <strong>Tập Gym 30–40 phút:</strong> Tiêu hao <strong>180 – 240 kcal</strong> (TB 35p: <strong>210 kcal</strong>)</li>
+                <li>• <strong>Tổng Calo Out (TDEE):</strong> <strong>2.000 – 2.060 kcal/ngày</strong></li>
+                <li>• <strong>Ngân sách Calo Nạp:</strong> <strong>1.500 kcal</strong> (Thâm hụt <strong>-500 đến -560 kcal</strong>)</li>
+                <li style="margin-top:4px;padding-top:6px;border-top:1px dashed var(--border);">
+                  <strong>🎯 Tinh chỉnh Macro (1.500 kcal):</strong><br>
+                  <span style="color:var(--protein);font-weight:700;">Đạm: 120g</span> •
+                  <span style="color:var(--carbs);font-weight:700;">Tinh bột: 158g</span> •
+                  <span style="color:var(--fat);font-weight:700;">Béo: 43g</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: WEEKLY WAIST, HIP & WEIGHT TRACKER -->
+      <div id="bodyTab" class="tab-panel">
+        <div class="card">
+          <div class="card-title">
+            <span>📏 Bảng Đo Chỉ Số Eo, Hông &amp; Cân Nặng Mỗi Tuần (12 Tuần)</span>
+            <span class="badge-goal">Mục tiêu: -3kg &amp; -4cm Eo</span>
+          </div>
+
+          <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;">
+            <div style="font-size:0.84rem;font-weight:700;margin-bottom:8px;">➕ Cập nhật Số đo Tuần</div>
+            <div class="form-grid" style="margin-bottom:8px;">
+              <div class="form-group">
+                <label>Chọn Tuần (1 → 12)</label>
+                <select id="wkSelect" onchange="loadWeekToForm()">
+                  <option value="1">Tuần 1 (Khởi điểm)</option>
+                  <option value="2">Tuần 2</option>
+                  <option value="3">Tuần 3</option>
+                  <option value="4">Tuần 4</option>
+                  <option value="5">Tuần 5</option>
+                  <option value="6">Tuần 6</option>
+                  <option value="7">Tuần 7</option>
+                  <option value="8">Tuần 8</option>
+                  <option value="9">Tuần 9</option>
+                  <option value="10">Tuần 10</option>
+                  <option value="11">Tuần 11</option>
+                  <option value="12">Tuần 12 (Đích)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Ngày đo</label>
+                <input type="date" id="wkDateInput">
+              </div>
+              <div class="form-group">
+                <label>Cân nặng (kg)</label>
+                <input type="number" step="0.1" id="wkWeightInput" placeholder="VD: 54.0">
+              </div>
+              <div class="form-group">
+                <label>Vòng Eo (cm) — ngang rốn/eo nhỏ nhất</label>
+                <input type="number" step="0.5" id="wkWaistInput" placeholder="VD: 68.0">
+              </div>
+              <div class="form-group">
+                <label>Vòng Hông (cm) — phần nở nhất của mông</label>
+                <input type="number" step="0.5" id="wkHipInput" placeholder="VD: 90.0">
+              </div>
+              <div class="form-group">
+                <label>Ghi chú tuần</label>
+                <input type="text" id="wkNoteInput" placeholder="VD: Tập 3 buổi gym, đủ 10k bước">
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="saveWeeklyMeasurement()">💾 Lưu Số Đo Tuần</button>
+              <button class="btn" onclick="copyWeeklyTableForSheets()">📋 Copy Bảng Đo Eo/Hông cho Google Sheets</button>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tuần</th>
+                  <th>Ngày đo</th>
+                  <th>Cân nặng</th>
+                  <th>Δ Cân</th>
+                  <th>Vòng Eo</th>
+                  <th>Δ Eo</th>
+                  <th>Vòng Hông</th>
+                  <th>Δ Hông</th>
+                  <th>Tỷ lệ Eo/Hông (WHR)</th>
+                  <th>Tiến độ (-4cm Eo)</th>
+                </tr>
+              </thead>
+              <tbody id="weeklyBodyTableBody"><tr>
+            <td><strong>Tuần 1</strong></td>
+            <td>14/10/2026</td>
+            <td><strong>54</strong> kg</td>
+            <td style="color:var(--fiber);font-weight:700;">0.0 kg</td>
+            <td><strong>68</strong> cm</td>
+            <td style="color:var(--fiber);font-weight:700;">0.0 cm</td>
+            <td><strong>90</strong> cm</td>
+            <td>0.0 cm</td>
+            <td><strong>0.76</strong> <small style="color:var(--text-muted)">(Tối ưu)</small></td>
+            <td><span class="badge-goal">0% mục tiêu -4cm</span></td>
+          </tr><tr>
+            <td><strong>Tuần 2</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần 2 ở trên để nhập</td>
+          </tr><tr>
+            <td><strong>Tuần 3</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần 3 ở trên để nhập</td>
+          </tr><tr>
+            <td><strong>Tuần 4</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần 4 ở trên để nhập</td>
+          </tr><tr>
+            <td><strong>Tuần 5</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần 5 ở trên để nhập</td>
+          </tr><tr>
+            <td><strong>Tuần 6</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần 6 ở trên để nhập</td>
+          </tr><tr>
+            <td><strong>Tuần 7</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần 7 ở trên để nhập</td>
+          </tr><tr>
+            <td><strong>Tuần 8</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần 8 ở trên để nhập</td>
+          </tr><tr>
+            <td><strong>Tuần 9</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần 9 ở trên để nhập</td>
+          </tr><tr>
+            <td><strong>Tuần 10</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần 10 ở trên để nhập</td>
+          </tr><tr>
+            <td><strong>Tuần 11</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần 11 ở trên để nhập</td>
+          </tr><tr>
+            <td><strong>Tuần 12</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần 12 ở trên để nhập</td>
+          </tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: GOOGLE SHEETS 2-WAY SYNC & GITHUB PAGES DEPLOYMENT -->
+      <div id="sheetsTab" class="tab-panel active">
+        <div class="card">
+          <div class="card-title">
+            <span>☁️ Đồng bộ 2 Chiều (Điện thoại Samsung ↔ Máy tính) &amp; Đẩy lên GitHub</span>
+            <a href="https://drive.google.com/file/d/1YQmV0vN46cqJG87udWJjSAlSyT68diCo/view?usp=drivesdk" target="_blank" rel="noopener" class="btn-mini" style="text-decoration:none;">Mở Google Sheet ↗</a>
+          </div>
+
+          <div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:12px;margin-bottom:12px;">
+            <div style="font-size:0.85rem;font-weight:700;color:var(--primary-dark);margin-bottom:6px;">
+              Bước 1: Kết nối Google Apps Script để Đồng bộ Tự động giữa Samsung &amp; Máy tính
+            </div>
+            <p style="font-size:0.78rem;color:#334155;margin-bottom:8px;">
+              Vì bạn nhập liệu trên cả <strong>điện thoại Samsung</strong> và <strong>máy tính</strong>, việc gắn đường dẫn <strong>Web App URL</strong> dưới đây sẽ biến Google Sheets thành bộ nhớ đám mây chung: nhập ở điện thoại xong mở máy tính sẽ tự động cập nhật (và ngược lại), đồng thời tự ghi vào bảng <em>Nhat_Ky_Hang_Ngay</em> và <em>Do_Eo_Hong_Hang_Tuan</em>.
+            </p>
+            <div class="form-group full" style="margin-bottom:8px;">
+              <label>Google Apps Script Web App URL (Dán 1 lần trên Samsung &amp; 1 lần trên Máy tính)</label>
+              <input type="text" id="sheetWebhookInput" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="saveWebhookUrl()">💾 Lưu URL &amp; Tải Dữ liệu Cloud</button>
+              <button class="btn" onclick="syncDayToGoogleSheet()">⬆️ Đẩy dữ liệu lên Cloud &amp; Sheet</button>
+              <button class="btn" onclick="pullStateFromCloud(false)">⬇️ Tải dữ liệu mới nhất về máy</button>
+              <button class="btn" onclick="copyAppsScriptCode()">📋 Copy mã Code.gs (Chuẩn 2 chiều)</button>
+            </div>
+            <pre id="appsScriptCodeBox" style="margin-top:10px;background:#0f172a;color:#e2e8f0;padding:10px;border-radius:8px;font-size:0.72rem;overflow-x:auto;max-height:210px;">// MÃ GOOGLE APPS SCRIPT ĐỒNG BỘ 2 CHIỀU (SAMSUNG &lt;-&gt; MÁY TÍNH &lt;-&gt; GOOGLE SHEETS)
+function doGet(e) {
+  var props = PropertiesService.getScriptProperties();
+  var savedState = props.getProperty("NUTRICHAT_CLOUD_STATE") || "{}";
+  return ContentService.createTextOutput(savedState).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    var body = JSON.parse(e.postData.contents);
+    var props = PropertiesService.getScriptProperties();
+    if (body.fullState) {
+      props.setProperty("NUTRICHAT_CLOUD_STATE", JSON.stringify(body.fullState));
+    }
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (body.daily) {
+      var d = body.daily;
+      var sh = ss.getSheetByName("Nhat_Ky_Hang_Ngay") || ss.getSheets()[1];
+      var data = sh.getDataRange().getValues();
+      var foundRow = -1;
+      for (var i = 5; i &lt; data.length; i++) {
+        var cellDate = data[i][0];
+        var strDate = (cellDate instanceof Date) ? Utilities.formatDate(cellDate, Session.getScriptTimeZone(), "yyyy-MM-dd") : String(cellDate).trim();
+        if (strDate === d.date || strDate === "") {
+          foundRow = i + 1;
+          break;
+        }
+      }
+      if (foundRow === -1) foundRow = sh.getLastRow() + 1;
+      sh.getRange(foundRow, 1, 1, 4).setValues([[d.date, d.modeLabel, d.steps, d.gymMins]]);
+      sh.getRange(foundRow, 10, 1, 1).setValue(d.intake);
+      sh.getRange(foundRow, 12, 1, 1).setValue(d.p + "g P | " + d.c + "g C | " + d.f + "g F | " + d.water + "ml");
+    }
+    if (body.weeklyBody) {
+      var shW = ss.getSheetByName("Do_Eo_Hong_Hang_Tuan") || ss.getSheets()[2];
+      for (var w = 1; w &lt;= 12; w++) {
+        var wk = body.weeklyBody[String(w)];
+        if (wk) {
+          var r = w + 5;
+          if (wk.date) shW.getRange(r, 2).setValue(wk.date);
+          if (wk.weight !== "") shW.getRange(r, 3).setValue(wk.weight);
+          if (wk.waist !== "") shW.getRange(r, 5).setValue(wk.waist);
+          if (wk.hip !== "") shW.getRange(r, 7).setValue(wk.hip);
+        }
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({status: "ok", syncedAt: new Date().toISOString()})).setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}</pre>
+          </div>
+
+          <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;">
+            <div style="font-size:0.84rem;font-weight:700;margin-bottom:6px;">Bước 2: Xuất file <code>index.html</code> chuẩn để tải lên GitHub Pages</div>
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px;">
+              Nhấn nút bên dưới để tải về file đã được đặt sẵn tên là <code>index.html</code> (kèm theo Webhook URL bạn vừa lưu nếu có), sau đó kéo thẳng lên GitHub repository của bạn.
+            </p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="downloadReadyIndexHtml()">⬇️ Tải file index.html chuẩn cho GitHub</button>
+              <button class="btn" onclick="copyDayRowForSheets()">📋 Copy Dòng Nhật Ký Hôm Nay</button>
+              <button class="btn" onclick="copyWeeklyTableForSheets()">📏 Copy Bảng Đo Eo &amp; Hông</button>
+            </div>
+          </div>
+
+          <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:12px;padding:12px;">
+            <div style="font-size:0.84rem;font-weight:700;margin-bottom:6px;">Bước 3: Sao lưu &amp; Khôi phục File (.JSON / .CSV)</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="openApiKeyModal()">🔑 Cài đặt Google AI Studio Key</button>
+              <button class="btn" onclick="exportJSON()">⬇️ Xuất Backup (.JSON)</button>
+              <button class="btn" onclick="exportCSV()">📊 Xuất Excel (.CSV)</button>
+              <label class="btn" style="cursor:pointer;">
+                ⬆️ Nhập (.JSON)
+                <input type="file" accept=".json" style="display:none" onchange="importJSON(event)">
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL 1: UPGRADED PHOTO CALORIE SCANNER (GEMINI VISION + COMPONENT BREAKDOWN) -->
+  <div class="modal-backdrop" id="photoModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📸 Nhận diện Calo &amp; Macro từ Ảnh Đồ Ăn</h3>
+        <button class="action-btn" onclick="closePhotoModal()">✕</button>
+      </div>
+
+      <img id="photoPreviewImg" class="photo-preview-box" src="" alt="Food preview">
+
+      <div style="background:#f0fdfa;padding:11px;border-radius:10px;border:1px solid #99f6e4;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+          <span style="font-size:0.8rem;font-weight:700;color:var(--primary-dark);">Cách 1: Chọn nhanh món có trong ảnh (1 chạm — Không cần API Key) hoặc Gõ tên món</span>
+          <button class="btn btn-primary" id="aiAnalyzePhotoBtn" style="padding:5px 10px;font-size:0.74rem;" onclick="analyzePhotoWithGemini()">✨ Quét bằng AI Key (Tùy chọn)</button>
+        </div>
+        <input type="text" id="photoQuickDesc" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;background:#fff;margin-bottom:8px;" placeholder="Gõ các món trong ảnh (VD: 150g ức gà + 1 chén cơm gạo lứt + rau luộc)..." oninput="previewPhotoTextParse()">
+        <div style="font-size:0.73rem;color:var(--text-muted);margin-bottom:5px;">Hoặc chạm để cộng dồn các món có trong bức ảnh của bạn:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;" id="photoQuickBuilderChips">
+          <button type="button" class="chip" onclick="appendPhotoDish('150g ức gà')">+ 150g Ức gà</button>
+          <button type="button" class="chip" onclick="appendPhotoDish('100g thịt bò')">+ 100g Thịt bò</button>
+          <button type="button" class="chip" onclick="appendPhotoDish('100g cá hồi')">+ 100g Cá hồi</button>
+          <button type="button" class="chip" onclick="appendPhotoDish('1 quả trứng luộc')">+ 1 Trứng</button>
+          <button type="button" class="chip" onclick="appendPhotoDish('1 chén cơm gạo lứt')">+ 1 Chén cơm lứt</button>
+          <button type="button" class="chip" onclick="appendPhotoDish('nửa chén cơm trắng')">+ 1/2 Chén cơm</button>
+          <button type="button" class="chip" onclick="appendPhotoDish('1 củ khoai lang')">+ 1 Khoai lang</button>
+          <button type="button" class="chip" onclick="appendPhotoDish('1 dĩa rau luộc')">+ 1 Dĩa rau/Salad</button>
+          <button type="button" class="chip" onclick="appendPhotoDish('1 tô bún chả cá')">+ Tô Bún chả cá</button>
+          <button type="button" class="chip" onclick="appendPhotoDish('1 tô mì quảng')">+ Tô Mì Quảng</button>
+          <button type="button" class="chip" onclick="appendPhotoDish('nửa quả bơ')">+ 1/2 Quả bơ</button>
+          <button type="button" class="chip" style="background:#ffe4e6;color:#9f1239;border-color:#fecdd3;" onclick="clearPhotoDishBuilder()">↺ Xóa làm lại</button>
+        </div>
+      </div>
+
+      <!-- AI Detected Components Box -->
+      <div class="ai-detected-list" id="aiDetectedListBox"></div>
+
+      <div style="background:var(--surface-soft);padding:10px;border-radius:10px;border:1px solid var(--border);">
+        <div style="font-size:0.79rem;font-weight:700;margin-bottom:8px;">⚖️ Kết quả Định lượng &amp; Thanh trượt Tinh chỉnh Nhanh</div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Tên món ăn hiển thị trong nhật ký</label>
+            <input type="text" id="photoItemName" value="Bữa ăn qua ảnh">
+          </div>
+          <div class="form-group">
+            <label>Bữa ăn</label>
+            <select id="photoMealType">
+              <option value="breakfast">🌅 Bữa sáng</option>
+              <option value="lunch" selected="">☀️ Bữa trưa</option>
+              <option value="dinner">🌙 Bữa tối</option>
+              <option value="snack">🍎 Bữa phụ</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Khối lượng ước tính (g)</label>
+            <input type="number" id="photoGrams" value="350">
+          </div>
+          <div class="form-group">
+            <label>Đạm - Protein (g): <strong id="lblPhotoP">28</strong>g</label>
+            <input type="range" min="0" max="120" value="28" id="sliderPhotoP" oninput="updatePhotoSliders()">
+          </div>
+          <div class="form-group">
+            <label>Tinh bột - Carbs (g): <strong id="lblPhotoC">45</strong>g</label>
+            <input type="range" min="0" max="160" value="45" id="sliderPhotoC" oninput="updatePhotoSliders()">
+          </div>
+          <div class="form-group">
+            <label>Chất béo - Fat (g): <strong id="lblPhotoF">14</strong>g</label>
+            <input type="range" min="0" max="80" value="14" id="sliderPhotoF" oninput="updatePhotoSliders()">
+          </div>
+          <div class="form-group">
+            <label>Chất xơ - Fiber (g): <strong id="lblPhotoFib">5</strong>g</label>
+            <input type="range" min="0" max="35" value="5" id="sliderPhotoFib" oninput="updatePhotoSliders()">
+          </div>
+          <div class="form-group full">
+            <label>Tổng Calo (kcal) = 4×P + 4×C + 9×F (Có thể sửa trực tiếp)</label>
+            <input type="number" id="photoTotalKcal" value="418">
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" onclick="closePhotoModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="savePhotoMealEntry()">✅ Lưu vào Nhật ký Ngày</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: GOOGLE AI STUDIO API KEY SETUP & TEST -->
+  <div class="modal-backdrop" id="apiKeyModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🔑 Cài đặt API Key (Phiên bản v3.0 — Hỗ trợ AQ.Ab8R...)</h3>
+        <button class="action-btn" onclick="closeApiKeyModal()">✕</button>
+      </div>
+
+      <div style="background:var(--surface-soft);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;font-size:0.81rem;">
+        <strong>Hỗ trợ cả chuẩn khóa mới <code>AQ.Ab8R...</code> (Vertex/Auth Key) và <code>AIzaSy...</code>:</strong>
+        <ol style="margin:6px 0 0 18px;display:flex;flex-direction:column;gap:4px;">
+          <li>Trong <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--primary);font-weight:700;">Google AI Studio ↗</a>, nhấn vào <strong>biểu tượng Copy (📋)</strong> của khóa (đừng bôi đen dòng chữ rút gọn có dấu <code>...</code> ở giữa; mã đầy đủ dài khoảng 39–53 ký tự, bắt đầu bằng <code>AQ.Ab8R...</code> hoặc <code>AIzaSy...</code>).</li>
+          <li>Dán mã vào ô bên dưới. Hệ thống sẽ <strong>tự động nhận diện định dạng <code>AQ.</code></strong> để định tuyến sang cổng <em>Vertex Express / Gemini API</em> chuẩn xác.</li>
+          <li><em>Lưu ý:</em> Nếu bạn đang mở trong khung xem trước (Preview), trình duyệt có thể chặn kết nối mạng thử nghiệm — hãy nhấn <strong>💾 Lưu Key</strong> và mở file trực tiếp trên Chrome hoặc link GitHub Pages để quét ảnh nhé!</li>
+        </ol>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Gemini API Key (Hỗ trợ cả mã <code>AQ.Ab8R...</code> mới và <code>AIzaSy...</code>)</label>
+          <input type="text" id="geminiApiKeyInput" placeholder="Dán đầy đủ mã AQ.Ab8R... hoặc AIzaSy... (không có dấu ... rút gọn)">
+        </div>
+        <div class="form-group full">
+          <label>Mô hình Gemini Vision sử dụng</label>
+          <select id="geminiModelSelect">
+            <option value="gemini-2.5-flash" selected="">gemini-2.5-flash (Nhanh &amp; Chính xác nhất - Khuyên dùng)</option>
+            <option value="gemini-2.0-flash">gemini-2.0-flash (Dự phòng tốc độ cao)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="apiKeyTestResult" style="font-size:0.8rem;margin-bottom:8px;display:none;padding:8px 10px;border-radius:8px;"></div>
+
+      <div class="btn-row">
+        <button class="btn" onclick="toggleShowApiKey()">👁️ Hiện/Ẩn Key</button>
+        <button class="btn" onclick="closeApiKeyModal()">Đóng</button>
+        <button class="btn btn-primary" id="btnTestSaveKey" onclick="testAndSaveApiKey()">🧪 Kiểm tra &amp; Lưu Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: MANUAL / EDIT ITEM MODAL -->
+  <div class="modal-backdrop" id="manualModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="manualModalTitle">➕ Thêm / Chỉnh sửa Món ăn</h3>
+        <button class="action-btn" onclick="closeManualModal()">✕</button>
+      </div>
+      <input type="hidden" id="editItemId" value="">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Tên món ăn</label>
+          <input type="text" id="manName" placeholder="VD: Ức gà áp chảo, Mì Quảng tôm thịt...">
+        </div>
+        <div class="form-group">
+          <label>Bữa ăn</label>
+          <select id="manMealType">
+            <option value="breakfast">🌅 Bữa sáng</option>
+            <option value="lunch">☀️ Bữa trưa</option>
+            <option value="dinner">🌙 Bữa tối</option>
+            <option value="snack">🍎 Bữa phụ / Ăn vặt</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Định lượng / Khẩu phần</label>
+          <input type="text" id="manPortion" placeholder="VD: 150g, 1 tô" value="1 khẩu phần">
+        </div>
+        <div class="form-group">
+          <label>Năng lượng (kcal)</label>
+          <input type="number" id="manKcal" value="250">
+        </div>
+        <div class="form-group">
+          <label>Đạm - Protein (g)</label>
+          <input type="number" step="0.1" id="manP" value="20" oninput="autoCalcManualKcal()">
+        </div>
+        <div class="form-group">
+          <label>Tinh bột - Carbs (g)</label>
+          <input type="number" step="0.1" id="manC" value="25" oninput="autoCalcManualKcal()">
+        </div>
+        <div class="form-group">
+          <label>Chất béo - Fat (g)</label>
+          <input type="number" step="0.1" id="manF" value="8" oninput="autoCalcManualKcal()">
+        </div>
+        <div class="form-group">
+          <label>Chất xơ - Fiber (g)</label>
+          <input type="number" step="0.1" id="manFib" value="3">
+        </div>
+        <div class="form-group" style="justify-content:center;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-top:18px;">
+            <input type="checkbox" id="manSaveFav"> ⭐ Lưu vào Món Yêu thích
+          </label>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="closeManualModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="saveManualEntry()">💾 Lưu dữ liệu</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. VIETNAMESE FOOD DATABASE
+    // =========================================================================
+    const FOOD_DB = [
+      { keys: ["bún chả cá", "bun cha ca"], name: "Bún chả cá Đà Nẵng", unit: "tô", baseGrams: 450, kcal: 420, p: 24, c: 58, f: 9, fib: 3 },
+      { keys: ["mì quảng", "mi quang"], name: "Mì Quảng tôm thịt trứng", unit: "tô", baseGrams: 400, kcal: 540, p: 28, c: 62, f: 18, fib: 4 },
+      { keys: ["phở bò", "pho bo"], name: "Phở bò tái nạm", unit: "tô", baseGrams: 500, kcal: 460, p: 26, c: 58, f: 12, fib: 2 },
+      { keys: ["phở gà", "pho ga"], name: "Phở gà", unit: "tô", baseGrams: 480, kcal: 420, p: 27, c: 55, f: 9, fib: 2 },
+      { keys: ["bún bò", "bun bo"], name: "Bún bò Huế", unit: "tô", baseGrams: 520, kcal: 580, p: 30, c: 64, f: 21, fib: 3 },
+      { keys: ["bánh canh", "banh canh"], name: "Bánh canh cá/thịt", unit: "tô", baseGrams: 450, kcal: 440, p: 22, c: 60, f: 11, fib: 2 },
+      { keys: ["cao lầu", "cao lau"], name: "Cao lầu Hội An", unit: "tô", baseGrams: 380, kcal: 510, p: 24, c: 65, f: 16, fib: 3 },
+      { keys: ["bún thịt nướng", "bun thit nuong"], name: "Bún thịt nướng", unit: "tô", baseGrams: 400, kcal: 550, p: 25, c: 66, f: 19, fib: 4 },
+      { keys: ["bún mắm", "bun mam"], name: "Bún mắm nêm thịt quay", unit: "tô", baseGrams: 380, kcal: 530, p: 23, c: 60, f: 21, fib: 4 },
+      { keys: ["hủ tiếu", "hu tieu"], name: "Hủ tiếu nam vang", unit: "tô", baseGrams: 450, kcal: 430, p: 24, c: 56, f: 11, fib: 2 },
+      { keys: ["bánh cuốn", "banh cuon", "bánh ướt"], name: "Bánh cuốn chả lụa", unit: "dĩa", baseGrams: 300, kcal: 390, p: 15, c: 56, f: 11, fib: 2 },
+      { keys: ["bánh xèo", "banh xeo"], name: "Bánh xèo miền Trung", unit: "cái", baseGrams: 180, kcal: 320, p: 12, c: 32, f: 16, fib: 3 },
+      { keys: ["gỏi cuốn", "goi cuon"], name: "Gỏi cuốn tôm thịt", unit: "cuốn", baseGrams: 85, kcal: 110, p: 7, c: 14, f: 2.5, fib: 1.5 },
+      { keys: ["cơm tấm", "com tam"], name: "Cơm tấm sườn bì chả", unit: "dĩa", baseGrams: 420, kcal: 680, p: 32, c: 78, f: 25, fib: 3 },
+      { keys: ["cơm gà", "com ga"], name: "Cơm gà xé/quay", unit: "dĩa", baseGrams: 380, kcal: 590, p: 31, c: 72, f: 18, fib: 2 },
+      { keys: ["cơm trắng", "com trang", "chén cơm", "bát cơm"], name: "Cơm trắng", unit: "chén", baseGrams: 130, kcal: 170, p: 3.5, c: 37, f: 0.4, fib: 0.6 },
+      { keys: ["cơm gạo lứt", "gạo lứt", "com gao lut"], name: "Cơm gạo lứt", unit: "chén", baseGrams: 130, kcal: 150, p: 3.8, c: 32, f: 1.2, fib: 2.5 },
+      { keys: ["bánh mì thịt", "banh mi thit", "bánh mì ốp la", "bánh mì"], name: "Bánh mì kẹp thịt/trứng", unit: "ổ", baseGrams: 220, kcal: 430, p: 18, c: 52, f: 16, fib: 3 },
+      { keys: ["bánh mì đen", "bánh mì nguyên cám", "sandwich"], name: "Bánh mì nguyên cám", unit: "lát", baseGrams: 35, kcal: 85, p: 4, c: 15, f: 1.2, fib: 2.5 },
+      { keys: ["khoai lang", "khoai"], name: "Khoai lang luộc/nướng", unit: "củ", baseGrams: 150, kcal: 130, p: 2.4, c: 30, f: 0.2, fib: 4.5 },
+      { keys: ["yến mạch", "yen mach", "oatmeal", "oats"], name: "Yến mạch cán dẹt", unit: "khẩu phần", baseGrams: 50, kcal: 190, p: 6.5, c: 33, f: 3.5, fib: 5 },
+      { keys: ["bắp luộc", "ngô luộc"], name: "Bắp/Ngô ngọt luộc", unit: "trái", baseGrams: 160, kcal: 155, p: 5, c: 34, f: 1.8, fib: 3.8 },
+      { keys: ["ức gà", "uc ga", "thịt gà"], name: "Ức gà áp chảo/luộc", unit: "khẩu phần", baseGrams: 100, kcal: 165, p: 31, c: 0, f: 3.6, fib: 0 },
+      { keys: ["thịt bò", "thit bo", "bò xào", "bò bít tết"], name: "Thịt bò nạc", unit: "khẩu phần", baseGrams: 100, kcal: 215, p: 26, c: 0, f: 12, fib: 0 },
+      { keys: ["thịt heo", "thịt lợn", "thit heo", "thịt luộc"], name: "Thịt heo nạc vai", unit: "khẩu phần", baseGrams: 100, kcal: 210, p: 22, c: 0, f: 13, fib: 0 },
+      { keys: ["cá hồi", "ca hoi", "salmon"], name: "Cá hồi áp chảo", unit: "khẩu phần", baseGrams: 100, kcal: 208, p: 20, c: 0, f: 13, fib: 0 },
+      { keys: ["cá thu", "cá nục", "cá hấp", "cá kho", "ca kho"], name: "Cá biển kho/hấp", unit: "khẩu phần", baseGrams: 100, kcal: 160, p: 22, c: 2, f: 7, fib: 0 },
+      { keys: ["tôm", "tom luoc", "tôm hấp"], name: "Tôm tươi hấp/xào", unit: "khẩu phần", baseGrams: 100, kcal: 99, p: 24, c: 0.2, f: 0.3, fib: 0 },
+      { keys: ["trứng luộc", "trứng gà", "trung luoc", "quả trứng", "trứng ốp la", "trứng"], name: "Trứng gà", unit: "quả", baseGrams: 55, kcal: 78, p: 6.3, c: 0.6, f: 5.3, fib: 0 },
+      { keys: ["đậu hũ", "đậu phụ", "dau hu", "tofu"], name: "Đậu hũ trắng/sốt", unit: "bìa", baseGrams: 100, kcal: 95, p: 10, c: 2, f: 5, fib: 1 },
+      { keys: ["whey", "protein shake"], name: "Muỗng Whey Protein", unit: "muỗng", baseGrams: 30, kcal: 120, p: 24, c: 3, f: 1.5, fib: 0 },
+      { keys: ["bông cải", "súp lơ", "rau luộc", "rau xào", "salad", "rau xanh"], name: "Rau củ luộc / Salad", unit: "dĩa", baseGrams: 150, kcal: 55, p: 3.5, c: 9, f: 0.8, fib: 4.5 },
+      { keys: ["quả bơ", "bơ sáp", "avocado"], name: "Bơ sáp", unit: "quả", baseGrams: 120, kcal: 190, p: 2.4, c: 10, f: 17, fib: 8 },
+      { keys: ["chuối", "quả chuối", "banana"], name: "Chuối chín", unit: "quả", baseGrams: 110, kcal: 98, p: 1.2, c: 25, f: 0.3, fib: 2.8 },
+      { keys: ["táo", "quả táo", "apple"], name: "Táo tươi", unit: "quả", baseGrams: 150, kcal: 78, p: 0.4, c: 21, f: 0.2, fib: 3.6 },
+      { keys: ["sữa chua không đường", "sữa chua hy lạp", "sua chua"], name: "Sữa chua không đường / Hy Lạp", unit: "hộp", baseGrams: 100, kcal: 85, p: 7, c: 6, f: 3.2, fib: 0 },
+      { keys: ["sữa tươi không đường", "sữa hạt", "sua tuoi"], name: "Sữa tươi không đường", unit: "hộp", baseGrams: 200, kcal: 110, p: 6.2, c: 9, f: 5.5, fib: 0 },
+      { keys: ["hạt điều", "hạnh nhân", "hạt dinh dưỡng", "óc chó"], name: "Hạt dinh dưỡng (Hạnh nhân/Điều)", unit: "nắm", baseGrams: 30, kcal: 175, p: 6, c: 6, f: 15, fib: 3 },
+      { keys: ["cà phê đen", "ca phe den", "americano"], name: "Cà phê đen không đường", unit: "ly", baseGrams: 200, kcal: 15, p: 0.3, c: 3, f: 0, fib: 0 },
+      { keys: ["cà phê sữa", "ca phe sua", "bạc xỉu"], name: "Cà phê sữa đá", unit: "ly", baseGrams: 250, kcal: 165, p: 3, c: 26, f: 5.5, fib: 0 },
+      { keys: ["cà phê muối", "ca phe muoi"], name: "Cà phê muối", unit: "ly", baseGrams: 250, kcal: 210, p: 3, c: 25, f: 11, fib: 0 }
+    ];
+
+    // =========================================================================
+    // 2. STATE & STORAGE
+    // =========================================================================
+    const STORAGE_KEY = "nutrichat_journable_data_v2";
+
+    function getTodayISO() {
+      const now = new Date();
+      const offset = now.getTimezoneOffset() * 60000;
+      return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+    }
+
+    let currentDate = getTodayISO();
+    let currentPhotoDataUrl = "";
+    let lastAiDetectedItems = [];
+
+    const MACRO_PRESETS = {
+      rest: {
+        calories: 1500,
+        protein: 110,
+        carbs: 140,
+        fat: 55,
+        fiber: 25,
+        hint: "🚶 <strong>Ngày Không Tập Gym (10.000 bước = 350 kcal):</strong> Tổng Calo Out ~1.820 kcal. Ăn <strong>1.500 kcal</strong> (Thâm hụt -320 kcal) • Đạm <strong>110g</strong> • Tinh bột <strong>140g</strong> (giảm nhẹ buổi tối) • Béo tốt <strong>55g</strong>."
+      },
+      gym: {
+        calories: 1500,
+        protein: 120,
+        carbs: 158,
+        fat: 43,
+        fiber: 25,
+        hint: "🏋️‍♀️ <strong>Ngày Có Tập Gym (10.000 bước + Gym 30–40p):</strong> Tổng Calo Out ~2.030 kcal. Ăn <strong>1.500 kcal</strong> (Thâm hụt -530 kcal) • Tăng Đạm lên <strong>120g</strong> & Tinh bột <strong>158g</strong> (nạp quanh buổi tập), giảm Béo xuống <strong>43g</strong>."
+      }
+    };
+
+    const defaultState = {
+      apiKey: "",
+      geminiModel: "gemini-2.5-flash",
+      webhookUrl: "",
+      waterGoal: 2000,
+      favorites: [
+        { name: "Bún chả cá Đà Nẵng", portion: "1 tô (450g)", kcal: 420, p: 24, c: 58, f: 9, fib: 3, mealType: "breakfast" },
+        { name: "Ức gà áp chảo (150g)", portion: "150g", kcal: 248, p: 46.5, c: 0, f: 5.4, fib: 0, mealType: "lunch" },
+        { name: "Cơm gạo lứt (1 chén)", portion: "1 chén (130g)", kcal: 150, p: 3.8, c: 32, f: 1.2, fib: 2.5, mealType: "lunch" },
+        { name: "Khoai lang luộc (150g)", portion: "1 củ (150g)", kcal: 130, p: 2.4, c: 30, f: 0.2, fib: 4.5, mealType: "snack" },
+        { name: "2 Quả trứng luộc", portion: "2 quả (110g)", kcal: 156, p: 12.6, c: 1.2, f: 10.6, fib: 0, mealType: "breakfast" },
+        { name: "Sữa chua Hy Lạp + Chuối", portion: "1 phần trước Gym", kcal: 183, p: 8.2, c: 31, f: 3.5, fib: 2.8, mealType: "snack" }
+      ],
+      weeklyBody: {
+        1: { date: "2026-10-14", weight: 54.0, waist: 68.0, hip: 90.0, note: "Chỉ số khởi điểm Tuần 1" }
+      },
+      days: {}
+    };
+
+    let appState = loadState();
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          const seeded = JSON.parse(JSON.stringify(defaultState));
+          const today = getTodayISO();
+          seeded.days[today] = {
+            activityMode: "gym",
+            steps: 10000,
+            gymMins: 35,
+            baseBmr: 1470,
+            water: 1000,
+            items: [
+              {
+                id: "sample_1",
+                name: "Bún chả cá Đà Nẵng",
+                portion: "1 tô (450g)",
+                mealType: "breakfast",
+                kcal: 420,
+                p: 24,
+                c: 58,
+                f: 9,
+                fib: 3,
+                photo: ""
+              },
+              {
+                id: "sample_2",
+                name: "Cà phê đen không đường",
+                portion: "1 ly",
+                mealType: "breakfast",
+                kcal: 15,
+                p: 0.3,
+                c: 3,
+                f: 0,
+                fib: 0,
+                photo: ""
+              }
+            ],
+            chats: [
+              {
+                role: "bot",
+                text: "Chào Kim Ánh! 👋 Mình đã bổ sung **Chế độ Nhập Bằng Ảnh (AI Photo Scanner)** ngay đầu trang kèm nút **🔑 Cài đặt AI Key**. Bạn chỉ cần nhấn **📸 Chụp Ảnh Bữa Ăn** hoặc dán ảnh (`Ctrl+V`) để Gemini tự động bóc tách từng món nhé!"
+              }
+            ]
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+          return seeded;
+        }
+        return Object.assign({}, defaultState, JSON.parse(raw));
+      } catch (e) {
+        return JSON.parse(JSON.stringify(defaultState));
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+    }
+
+    function getDayData(dateStr) {
+      if (!appState.days[dateStr]) {
+        appState.days[dateStr] = {
+          activityMode: "rest",
+          steps: 10000,
+          gymMins: 0,
+          baseBmr: 1470,
+          water: 0,
+          items: [],
+          chats: [
+            {
+              role: "bot",
+              text: `Nhật ký ngày ${formatDateVN(dateStr)} (Mục tiêu: **1.500 kcal**). Hãy chụp ảnh món ăn hoặc gõ tên món bên dưới nhé!`
+            }
+          ]
+        };
+      }
+      if (appState.days[dateStr].steps === undefined) appState.days[dateStr].steps = 10000;
+      if (appState.days[dateStr].baseBmr === undefined) appState.days[dateStr].baseBmr = 1470;
+      if (!appState.days[dateStr].activityMode) appState.days[dateStr].activityMode = "rest";
+      if (appState.days[dateStr].gymMins === undefined) {
+        appState.days[dateStr].gymMins = appState.days[dateStr].activityMode === "gym" ? 35 : 0;
+      }
+      return appState.days[dateStr];
+    }
+
+    function formatDateVN(dateStr) {
+      const parts = (dateStr || "").split("-");
+      if (parts.length !== 3) return dateStr;
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    // =========================================================================
+    // 3. ACTIVITY MODE & CALORIE OUT CALCULATIONS
+    // =========================================================================
+    function getDayCalorieOut(dateStr) {
+      const day = getDayData(dateStr);
+      const steps = Number(day.steps) || 10000;
+      const walkBurn = Math.round(steps * 0.035);
+      const gymMins = day.activityMode === "gym" ? (Number(day.gymMins) || 35) : 0;
+      const gymBurn = Math.round(gymMins * 6.0);
+      const baseBmr = Number(day.baseBmr) || 1470;
+      const activeOut = walkBurn + gymBurn;
+      const totalOut = baseBmr + activeOut;
+      return { steps, gymMins, walkBurn, gymBurn, baseBmr, activeOut, totalOut };
+    }
+
+    function getDayTotals(dateStr) {
+      const day = getDayData(dateStr);
+      let intake = 0, p = 0, c = 0, f = 0, fib = 0;
+      for (const item of day.items) {
+        intake += Number(item.kcal) || 0;
+        p += Number(item.p) || 0;
+        c += Number(item.c) || 0;
+        f += Number(item.f) || 0;
+        fib += Number(item.fib) || 0;
+      }
+      const calOut = getDayCalorieOut(dateStr);
+      const modePreset = MACRO_PRESETS[day.activityMode === "gym" ? "gym" : "rest"];
+      return {
+        intake: Math.round(intake),
+        p: Math.round(p * 10) / 10,
+        c: Math.round(c * 10) / 10,
+        f: Math.round(f * 10) / 10,
+        fib: Math.round(fib * 10) / 10,
+        calOut: calOut,
+        preset: modePreset,
+        PlannedDeficit: 1500 - calOut.totalOut,
+        ActualDeficit: Math.round(intake) - calOut.totalOut
+      };
+    }
+
+    function setDayActivityMode(mode) {
+      const day = getDayData(currentDate);
+      day.activityMode = mode;
+      if (mode === "gym" && (!day.gymMins || day.gymMins < 15)) {
+        day.gymMins = 35;
+      } else if (mode === "rest") {
+        day.gymMins = 0;
+      }
+      saveState();
+      renderAll();
+    }
+
+    function updateDayActivityFromForm() {
+      const day = getDayData(currentDate);
+      const mode = document.getElementById("actModeSelect").value;
+      const steps = parseInt(document.getElementById("actStepsInput").value, 10) || 10000;
+      let gymMins = parseInt(document.getElementById("actGymMinsSlider").value, 10) || 0;
+      const baseBmr = parseInt(document.getElementById("actBaseBmrInput").value, 10) || 1470;
+
+      if (mode === "rest") {
+        gymMins = 0;
+        document.getElementById("actGymMinsSlider").value = 0;
+      } else if (mode === "gym" && gymMins === 0) {
+        gymMins = 35;
+        document.getElementById("actGymMinsSlider").value = 35;
+      }
+
+      document.getElementById("lblGymMins").textContent = gymMins;
+      day.activityMode = mode;
+      day.steps = steps;
+      day.gymMins = gymMins;
+      day.baseBmr = baseBmr;
+      saveState();
+      renderSummaryDashboard();
+    }
+
+    // =========================================================================
+    // 4. UI RENDERING & CLIPBOARD PASTE SUPPORT FOR PHOTOS
+    // =========================================================================
+    function initApp() {
+      const dateInput = document.getElementById("currentDateInput");
+      dateInput.value = currentDate;
+      dateInput.addEventListener("change", (e) => {
+        if (e.target.value) {
+          currentDate = e.target.value;
+          renderAll();
+        }
+      });
+
+      document.getElementById("prevDayBtn").addEventListener("click", () => shiftDate(-1));
+      document.getElementById("nextDayBtn").addEventListener("click", () => shiftDate(1));
+      document.getElementById("todayBtn").addEventListener("click", () => {
+        currentDate = getTodayISO();
+        renderAll();
+      });
+
+      // Support Ctrl+V pasting food images anywhere on the page
+      window.addEventListener("paste", (e) => {
+        if (!e.clipboardData || !e.clipboardData.items) return;
+        for (const item of e.clipboardData.items) {
+          if (item.type.indexOf("image") !== -1) {
+            const file = item.getAsFile();
+            if (file) processSelectedImageFile(file);
+            break;
+          }
+        }
+      });
+
+      document.getElementById("geminiApiKeyInput").value = appState.apiKey || "";
+      document.getElementById("geminiModelSelect").value = appState.geminiModel || "gemini-2.5-flash";
+      document.getElementById("sheetWebhookInput").value = appState.webhookUrl || "";
+      document.getElementById("wkDateInput").value = currentDate;
+
+      loadWeekToForm();
+      renderAll();
+      if (appState.webhookUrl && appState.webhookUrl.trim().length > 15) {
+        pullStateFromCloud(true);
+      }
+    }
+
+    function updateApiKeyBadges() {
+      const hasKey = appState.apiKey && appState.apiKey.trim().length > 10;
+      const headerBtn = document.getElementById("headerApiBtn");
+      const bannerBtn = document.getElementById("photoBannerKeyStatus");
+      if (hasKey) {
+        headerBtn.className = "api-pill-btn connected";
+        headerBtn.textContent = "🟢 AI Vision: Đã kết nối";
+        bannerBtn.textContent = "🟢 Đã kết nối Gemini AI";
+        bannerBtn.style.background = "#dcfce7";
+        bannerBtn.style.color = "#166534";
+      } else {
+        headerBtn.className = "api-pill-btn";
+        headerBtn.textContent = "🔑 Cài đặt AI Key";
+        bannerBtn.textContent = "🔑 Nhập Google AI Studio Key";
+      }
+    }
+
+    function shiftDate(deltaDays) {
+      const d = new Date(currentDate + "T00:00:00");
+      d.setDate(d.getDate() + deltaDays);
+      const offset = d.getTimezoneOffset() * 60000;
+      currentDate = new Date(d.getTime() - offset).toISOString().slice(0, 10);
+      renderAll();
+    }
+
+    function renderAll() {
+      document.getElementById("currentDateInput").value = currentDate;
+      updateApiKeyBadges();
+      renderWeekStrip();
+      renderSummaryDashboard();
+      renderFavoriteChips();
+      renderChatMessages();
+      renderDiaryMeals();
+      renderWeeklyBodyTable();
+    }
+
+    function renderWeekStrip() {
+      const strip = document.getElementById("weekStrip");
+      strip.innerHTML = "";
+      const center = new Date(currentDate + "T00:00:00");
+      const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+
+      for (let i = -3; i <= 3; i++) {
+        const d = new Date(center);
+        d.setDate(center.getDate() + i);
+        const offset = d.getTimezoneOffset() * 60000;
+        const iso = new Date(d.getTime() - offset).toISOString().slice(0, 10);
+        const hasData = appState.days[iso] && appState.days[iso].items && appState.days[iso].items.length > 0;
+
+        const div = document.createElement("div");
+        div.className = `week-day ${iso === currentDate ? "active" : ""} ${hasData ? "has-data" : ""}`;
+        div.innerHTML = `
+          <span class="day-name">${dayNames[d.getDay()]}</span>
+          <span class="day-num">${d.getDate()}/${d.getMonth() + 1}</span>
+          <div class="day-dot"></div>
+        `;
+        div.onclick = () => {
+          currentDate = iso;
+          renderAll();
+        };
+        strip.appendChild(div);
+      }
+    }
+
+    function renderSummaryDashboard() {
+      const day = getDayData(currentDate);
+      const t = getDayTotals(currentDate);
+      const targetCal = 1500;
+      const remain = targetCal - t.intake;
+
+      const isGym = day.activityMode === "gym";
+      document.getElementById("btnModeRest").className = `mode-btn rest-mode ${!isGym ? "active" : ""}`;
+      document.getElementById("btnModeGym").className = `mode-btn gym-mode ${isGym ? "active" : ""}`;
+
+      const banner = document.getElementById("dietHintBanner");
+      banner.className = `diet-hint-banner ${isGym ? "gym" : ""}`;
+      banner.innerHTML = t.preset.hint;
+
+      document.getElementById("lblActivityDate").textContent = formatDateVN(currentDate);
+      document.getElementById("actModeSelect").value = day.activityMode;
+      document.getElementById("actStepsInput").value = t.calOut.steps;
+      document.getElementById("actGymMinsSlider").value = t.calOut.gymMins;
+      document.getElementById("lblGymMins").textContent = t.calOut.gymMins;
+      document.getElementById("actBaseBmrInput").value = t.calOut.baseBmr;
+
+      document.getElementById("cardCompareRest").className = `mode-card ${!isGym ? "selected" : ""}`;
+      document.getElementById("cardCompareGym").className = `mode-card gym-card ${isGym ? "selected" : ""}`;
+
+      document.getElementById("calIntakeVal").textContent = `${t.intake.toLocaleString()} / 1,500`;
+      document.getElementById("calActiveOutVal").textContent = `${t.calOut.activeOut.toLocaleString()} kcal`;
+      document.getElementById("calTotalOutVal").textContent = `${t.calOut.totalOut.toLocaleString()} kcal`;
+
+      const defToShow = t.intake > 0 ? t.ActualDeficit : t.PlannedDeficit;
+      document.getElementById("calDeficitVal").textContent = `${defToShow > 0 ? "+" : ""}${defToShow.toLocaleString()} kcal`;
+
+      const remainEl = document.getElementById("calRemainVal");
+      const remainLbl = document.getElementById("calRemainLabel");
+      const ringEl = document.getElementById("calRingProgress");
+
+      if (remain >= 0) {
+        remainEl.textContent = remain.toLocaleString();
+        remainEl.style.color = "var(--text)";
+        remainLbl.textContent = "Còn lại / 1.500 kcal";
+        ringEl.style.stroke = "var(--primary)";
+      } else {
+        remainEl.textContent = `+${Math.abs(remain).toLocaleString()}`;
+        remainEl.style.color = "var(--protein)";
+        remainLbl.textContent = "Vượt mức 1.500 kcal";
+        ringEl.style.stroke = "var(--protein)";
+      }
+
+      const circumference = 314.16;
+      const ratio = Math.min(Math.max(t.intake / targetCal, 0), 1);
+      ringEl.style.strokeDashoffset = (circumference * (1 - ratio)).toFixed(2);
+
+      document.getElementById("pCur").textContent = t.p;
+      document.getElementById("pTar").textContent = t.preset.protein;
+      document.getElementById("pBar").style.width = `${Math.min((t.p / t.preset.protein) * 100, 100)}%`;
+
+      document.getElementById("cCur").textContent = t.c;
+      document.getElementById("cTar").textContent = t.preset.carbs;
+      document.getElementById("cBar").style.width = `${Math.min((t.c / t.preset.carbs) * 100, 100)}%`;
+
+      document.getElementById("fCur").textContent = t.f;
+      document.getElementById("fTar").textContent = t.preset.fat;
+      document.getElementById("fBar").style.width = `${Math.min((t.f / t.preset.fat) * 100, 100)}%`;
+
+      document.getElementById("fibCur").textContent = t.fib;
+      document.getElementById("fibTar").textContent = t.preset.fiber;
+      document.getElementById("fibBar").style.width = `${Math.min((t.fib / t.preset.fiber) * 100, 100)}%`;
+
+      document.getElementById("waterVal").textContent = `${day.water || 0} ml`;
+      document.getElementById("waterGlasses").textContent = `${day.water || 0} / ${appState.waterGoal || 2000} ml`;
+    }
+
+    function addWater(amount) {
+      const day = getDayData(currentDate);
+      day.water = Math.max(0, (day.water || 0) + amount);
+      saveState();
+      renderSummaryDashboard();
+    }
+
+    // =========================================================================
+    // 5. GOOGLE AI STUDIO API KEY MODAL & TESTER
+    // =========================================================================
+    function openApiKeyModal() {
+      document.getElementById("geminiApiKeyInput").value = appState.apiKey || "";
+      document.getElementById("geminiModelSelect").value = appState.geminiModel || "gemini-2.5-flash";
+      document.getElementById("apiKeyTestResult").style.display = "none";
+      document.getElementById("apiKeyModal").classList.add("open");
+    }
+
+    function closeApiKeyModal() {
+      document.getElementById("apiKeyModal").classList.remove("open");
+    }
+
+    function toggleShowApiKey() {
+      const inp = document.getElementById("geminiApiKeyInput");
+      inp.type = inp.type === "password" ? "text" : "password";
+    }
+
+    // Smart Dual-Endpoint Router for both AQ.Ab8R... (Vertex Express / Auth Key) and AIzaSy... (Standard Key)
+    async function callGeminiSmartEndpoint(key, model, partsArray, expectJson = false) {
+      const cleanKey = key.trim().replace(/^["']|["']$/g, "");
+      const payload = {
+        contents: [{ role: "user", parts: partsArray }]
+      };
+      if (expectJson) {
+        payload.generationConfig = { response_mime_type: "application/json" };
+      }
+
+      const isAQ = cleanKey.startsWith("AQ.");
+      // Build candidate endpoints in priority order based on key prefix
+      const endpoints = isAQ
+        ? [
+            {
+              name: "Vertex AI Express (aiplatform.googleapis.com)",
+              url: `https://aiplatform.googleapis.com/v1/publishers/google/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`,
+              headers: { "Content-Type": "application/json" }
+            },
+            {
+              name: "Gemini Developer API (Query Key)",
+              url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`,
+              headers: { "Content-Type": "application/json" }
+            },
+            {
+              name: "Gemini Developer API (x-goog-api-key Header)",
+              url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+              headers: { "Content-Type": "application/json", "x-goog-api-key": cleanKey }
+            }
+          ]
+        : [
+            {
+              name: "Gemini Developer API (generativelanguage.googleapis.com)",
+              url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`,
+              headers: { "Content-Type": "application/json" }
+            },
+            {
+              name: "Vertex AI Express (aiplatform.googleapis.com)",
+              url: `https://aiplatform.googleapis.com/v1/publishers/google/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`,
+              headers: { "Content-Type": "application/json" }
+            }
+          ];
+
+      let lastErrorMsg = "";
+      for (const ep of endpoints) {
+        try {
+          const res = await fetch(ep.url, {
+            method: "POST",
+            headers: ep.headers,
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            const data = await res.json();
+            return { ok: true, data, endpointName: ep.name };
+          } else {
+            const errBody = await res.text();
+            lastErrorMsg = `[${ep.name} -> HTTP ${res.status}] ${errBody.slice(0, 160)}`;
+          }
+        } catch (netErr) {
+          lastErrorMsg = `[${ep.name}] Lỗi mạng hoặc khung xem trước chặn CORS (${netErr.message})`;
+        }
+      }
+      throw new Error(lastErrorMsg || "Không thể kết nối tới máy chủ Gemini.");
+    }
+
+    async function testAndSaveApiKey() {
+      const rawKey = document.getElementById("geminiApiKeyInput").value.trim();
+      const model = document.getElementById("geminiModelSelect").value || "gemini-2.5-flash";
+      const resBox = document.getElementById("apiKeyTestResult");
+      const btn = document.getElementById("btnTestSaveKey");
+
+      if (rawKey.includes("...") || rawKey.includes("…") || (rawKey.length > 0 && rawKey.length < 25)) {
+        resBox.style.display = "block";
+        resBox.style.background = "#ffe4e6";
+        resBox.style.color = "#9f1239";
+        resBox.innerHTML = "⚠️ <strong>Mã bị rút gọn!</strong> Chuỗi bạn dán (<code>" + rawKey.slice(0, 15) + "...</code>) đang chứa dấu <code>...</code> hoặc quá ngắn. Trong Google AI Studio, đừng bôi đen dòng chữ trên bảng mà hãy nhấn vào <strong>biểu tượng Copy (📋)</strong> để lấy đủ ~53 ký tự nhé!";
+        return;
+      }
+
+      appState.apiKey = rawKey;
+      appState.geminiModel = model;
+      saveState();
+      updateApiKeyBadges();
+
+      if (!rawKey) {
+        resBox.style.display = "block";
+        resBox.style.background = "#fef3c7";
+        resBox.style.color = "#92400e";
+        resBox.textContent = "Đã xóa API Key. Bạn vẫn có thể sử dụng chế độ ước lượng trực quan và cơ sở dữ liệu món Việt offline.";
+        return;
+      }
+
+      btn.textContent = "⏳ Đang tự động dò cổng AQ. / AIza...";
+      btn.disabled = true;
+
+      try {
+        const result = await callGeminiSmartEndpoint(rawKey, model, [{ text: "Trả lời ngắn gọn: OK" }], false);
+        resBox.style.display = "block";
+        resBox.style.background = "#dcfce7";
+        resBox.style.color = "#166534";
+        resBox.innerHTML = `✅ <strong>Đã lưu & kết nối thành công qua cổng ${result.endpointName}!</strong> Khóa <code>${rawKey.slice(0, 7)}...</code> đã sẵn sàng quét ảnh đồ ăn.`;
+      } catch (err) {
+        resBox.style.display = "block";
+        resBox.style.background = "#fef3c7";
+        resBox.style.color = "#92400e";
+        resBox.innerHTML = `✅ <strong>Đã lưu mã <code>${rawKey.slice(0, 8)}...</code> vào bộ nhớ!</strong><br><small>Lưu ý chẩn đoán: ${err.message}. Nếu bạn đang bấm trong cửa sổ Xem trước (Preview), trình duyệt sẽ chặn gọi mạng ra ngoài — chỉ cần tải file <code>index.html</code> về mở trên Chrome hoặc đẩy lên GitHub Pages là quét ảnh hoạt động ngay!</small>`;
+      } finally {
+        btn.textContent = "🧪 Kiểm tra & Lưu Key";
+        btn.disabled = false;
+      }
+    }
+
+    // =========================================================================
+    // 6. UPGRADED PHOTO CALORIE SCANNER (GEMINI VISION + MULTI-ITEM BREAKDOWN)
+    // =========================================================================
+    function handlePhotoSelected(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      processSelectedImageFile(file);
+      event.target.value = "";
+    }
+
+    function processSelectedImageFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          const maxDim = 640;
+          let w = img.width, h = img.height;
+          if (w > h && w > maxDim) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else if (h > maxDim) {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          currentPhotoDataUrl = canvas.toDataURL("image/jpeg", 0.78);
+
+          lastAiDetectedItems = [];
+          document.getElementById("aiDetectedListBox").style.display = "none";
+          document.getElementById("aiDetectedListBox").innerHTML = "";
+          document.getElementById("photoPreviewImg").src = currentPhotoDataUrl;
+          document.getElementById("photoMealType").value = guessMealByHour();
+          document.getElementById("photoModal").classList.add("open");
+
+          if (appState.apiKey && appState.apiKey.trim().length > 10) {
+            analyzePhotoWithGemini();
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function closePhotoModal() {
+      document.getElementById("photoModal").classList.remove("open");
+    }
+
+    function updatePhotoSliders() {
+      const p = parseFloat(document.getElementById("sliderPhotoP").value) || 0;
+      const c = parseFloat(document.getElementById("sliderPhotoC").value) || 0;
+      const f = parseFloat(document.getElementById("sliderPhotoF").value) || 0;
+      const fib = parseFloat(document.getElementById("sliderPhotoFib").value) || 0;
+
+      document.getElementById("lblPhotoP").textContent = p;
+      document.getElementById("lblPhotoC").textContent = c;
+      document.getElementById("lblPhotoF").textContent = f;
+      document.getElementById("lblPhotoFib").textContent = fib;
+      document.getElementById("photoTotalKcal").value = Math.round(p * 4 + c * 4 + f * 9);
+    }
+
+    function appendPhotoDish(dishText) {
+      const inp = document.getElementById("photoQuickDesc");
+      inp.value = inp.value.trim() ? (inp.value.trim() + " + " + dishText) : dishText;
+      previewPhotoTextParse();
+    }
+
+    function clearPhotoDishBuilder() {
+      document.getElementById("photoQuickDesc").value = "";
+      document.getElementById("photoItemName").value = "Bữa ăn qua ảnh";
+      document.getElementById("sliderPhotoP").value = 25;
+      document.getElementById("sliderPhotoC").value = 40;
+      document.getElementById("sliderPhotoF").value = 12;
+      document.getElementById("sliderPhotoFib").value = 5;
+      updatePhotoSliders();
+    }
+
+    function previewPhotoTextParse() {
+      const desc = document.getElementById("photoQuickDesc").value.trim();
+      if (!desc) return;
+      const parsed = parseNaturalLanguageMeal(desc, document.getElementById("photoMealType").value);
+      if (parsed.length > 0) {
+        let totalKcal = 0, totalP = 0, totalC = 0, totalF = 0, totalFib = 0;
+        const names = [];
+        parsed.forEach(it => {
+          names.push(it.name);
+          totalKcal += it.kcal;
+          totalP += it.p;
+          totalC += it.c;
+          totalF += it.f;
+          totalFib += it.fib || 0;
+        });
+        document.getElementById("photoItemName").value = names.join(" + ");
+        document.getElementById("sliderPhotoP").value = Math.round(totalP);
+        document.getElementById("sliderPhotoC").value = Math.round(totalC);
+        document.getElementById("sliderPhotoF").value = Math.round(totalF);
+        document.getElementById("sliderPhotoFib").value = Math.round(totalFib);
+        document.getElementById("lblPhotoP").textContent = Math.round(totalP * 10) / 10;
+        document.getElementById("lblPhotoC").textContent = Math.round(totalC * 10) / 10;
+        document.getElementById("lblPhotoF").textContent = Math.round(totalF * 10) / 10;
+        document.getElementById("lblPhotoFib").textContent = Math.round(totalFib * 10) / 10;
+        document.getElementById("photoTotalKcal").value = Math.round(totalKcal);
+      }
+    }
+
+    async function analyzePhotoWithGemini() {
+      const key = (appState.apiKey || "").trim();
+      if (!key) {
+        openApiKeyModal();
+        return;
+      }
+      const model = appState.geminiModel || "gemini-2.5-flash";
+      const userNote = document.getElementById("photoQuickDesc").value.trim();
+      const btn = document.getElementById("aiAnalyzePhotoBtn");
+      btn.textContent = "⏳ AI đang phân tích món ăn...";
+      btn.disabled = true;
+
+      try {
+        const base64Data = currentPhotoDataUrl.split(",")[1];
+        const prompt = `Bạn là chuyên gia dinh dưỡng Việt Nam. Hãy phân tích bức ảnh đồ ăn này${userNote ? ` (Lưu ý từ người dùng: "${userNote}")` : ""}.
+Nhận diện từng món/thành phần trong ảnh, ước lượng khối lượng (gram), calo (kcal), đạm (p), tinh bột (c), béo (f), chất xơ (fib).
+Trả về đúng định dạng JSON sau:
+{
+  "summary_name": "Tên tổng hợp bữa ăn",
+  "total_grams": 400,
+  "total_kcal": 510,
+  "total_p": 32,
+  "total_c": 54,
+  "total_f": 16,
+  "total_fib": 5,
+  "advice": "Nhận xét ngắn gọn 1 câu cho mục tiêu 1500 kcal/ngày",
+  "items": [
+    {"name": "Tên thành phần 1", "portion": "150g", "kcal": 248, "p": 46, "c": 0, "f": 5, "fib": 0}
+  ]
+}`;
+
+        const result = await callGeminiSmartEndpoint(
+          key,
+          model,
+          [
+            { text: prompt },
+            { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+          ],
+          true
+        );
+        const data = result.data;
+        const rawText = (data.candidates?.[0]?.content?.parts?.[0]?.text || "").replace(/```json|```/g, "").trim();
+        const parsed = JSON.parse(rawText);
+
+        if (parsed && parsed.summary_name) {
+          document.getElementById("photoItemName").value = parsed.summary_name;
+          document.getElementById("photoGrams").value = parsed.total_grams || 350;
+          document.getElementById("sliderPhotoP").value = Math.round(parsed.total_p || 25);
+          document.getElementById("sliderPhotoC").value = Math.round(parsed.total_c || 45);
+          document.getElementById("sliderPhotoF").value = Math.round(parsed.total_f || 15);
+          document.getElementById("sliderPhotoFib").value = Math.round(parsed.total_fib || 4);
+          document.getElementById("lblPhotoP").textContent = parsed.total_p || 25;
+          document.getElementById("lblPhotoC").textContent = parsed.total_c || 45;
+          document.getElementById("lblPhotoF").textContent = parsed.total_f || 15;
+          document.getElementById("lblPhotoFib").textContent = parsed.total_fib || 4;
+          document.getElementById("photoTotalKcal").value = Math.round(parsed.total_kcal || 450);
+
+          lastAiDetectedItems = Array.isArray(parsed.items) ? parsed.items : [];
+          const listBox = document.getElementById("aiDetectedListBox");
+          listBox.style.display = "block";
+          let listHtml = `<strong>✨ Gemini Vision đã nhận diện:</strong><ul style="margin:5px 0 6px 16px;">`;
+          lastAiDetectedItems.forEach(it => {
+            listHtml += `<li><strong>${it.name}</strong> (${it.portion}): <strong>${it.kcal} kcal</strong> — Đạm ${it.p}g • Tinh bột ${it.c}g • Béo ${it.f}g</li>`;
+          });
+          listHtml += `</ul>`;
+          if (parsed.advice) {
+            listHtml += `<div style="color:#166534;font-style:italic;">💡 ${parsed.advice}</div>`;
+          }
+          listBox.innerHTML = listHtml;
+        }
+      } catch (e) {
+        alert("Không thể phân tích tự động (hãy kiểm tra lại API Key hoặc mạng). Bạn vẫn có thể gõ tên món vào ô mô tả hoặc kéo thanh trượt bên dưới nhé!");
+      } finally {
+        btn.textContent = "✨ Quét Ảnh bằng Gemini AI";
+        btn.disabled = false;
+      }
+    }
+
+    function savePhotoMealEntry() {
+      const name = document.getElementById("photoItemName").value.trim() || "Bữa ăn qua ảnh";
+      const mealType = document.getElementById("photoMealType").value;
+      const grams = document.getElementById("photoGrams").value || 350;
+      const p = parseFloat(document.getElementById("sliderPhotoP").value) || 0;
+      const c = parseFloat(document.getElementById("sliderPhotoC").value) || 0;
+      const f = parseFloat(document.getElementById("sliderPhotoF").value) || 0;
+      const fib = parseFloat(document.getElementById("sliderPhotoFib").value) || 0;
+      const kcal = parseInt(document.getElementById("photoTotalKcal").value, 10) || Math.round(p * 4 + c * 4 + f * 9);
+
+      const entry = {
+        id: "id_" + Date.now(),
+        name,
+        portion: `Ảnh (~${grams}g)`,
+        mealType,
+        kcal, p, c, f, fib,
+        photo: currentPhotoDataUrl
+      };
+
+      const day = getDayData(currentDate);
+      day.items.push(entry);
+      day.chats.push({ role: "user", text: `📸 Đã nhập bữa ăn bằng ảnh: ${name}`, photo: currentPhotoDataUrl });
+      day.chats.push({ role: "bot", text: `Đã lưu bữa ăn từ ảnh vào **${getMealLabel(mealType)}**:`, items: [entry] });
+
+      saveState();
+      closePhotoModal();
+      renderAll();
+    }
+
+    // =========================================================================
+    // 7. WEEKLY WAIST, HIP & WEIGHT TRACKER
+    // =========================================================================
+    function loadWeekToForm() {
+      const wk = document.getElementById("wkSelect").value;
+      const entry = (appState.weeklyBody && appState.weeklyBody[wk]) || {};
+      document.getElementById("wkDateInput").value = entry.date || currentDate;
+      document.getElementById("wkWeightInput").value = entry.weight !== undefined ? entry.weight : "";
+      document.getElementById("wkWaistInput").value = entry.waist !== undefined ? entry.waist : "";
+      document.getElementById("wkHipInput").value = entry.hip !== undefined ? entry.hip : "";
+      document.getElementById("wkNoteInput").value = entry.note || "";
+    }
+
+    function saveWeeklyMeasurement() {
+      const wk = document.getElementById("wkSelect").value;
+      const date = document.getElementById("wkDateInput").value || currentDate;
+      const weight = parseFloat(document.getElementById("wkWeightInput").value);
+      const waist = parseFloat(document.getElementById("wkWaistInput").value);
+      const hip = parseFloat(document.getElementById("wkHipInput").value);
+      const note = document.getElementById("wkNoteInput").value.trim();
+
+      if (isNaN(weight) && isNaN(waist) && isNaN(hip)) {
+        alert("Vui lòng nhập ít nhất một chỉ số (Cân nặng, Vòng eo hoặc Vòng hông).");
+        return;
+      }
+
+      if (!appState.weeklyBody) appState.weeklyBody = {};
+      appState.weeklyBody[wk] = {
+        date,
+        weight: isNaN(weight) ? "" : weight,
+        waist: isNaN(waist) ? "" : waist,
+        hip: isNaN(hip) ? "" : hip,
+        note
+      };
+
+      saveState();
+      renderWeeklyBodyTable();
+      alert(`Đã lưu chỉ số Tuần ${wk}!`);
+    }
+
+    function renderWeeklyBodyTable() {
+      const tbody = document.getElementById("weeklyBodyTableBody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      const base = (appState.weeklyBody && appState.weeklyBody[1]) || { weight: 54.0, waist: 68.0, hip: 90.0 };
+
+      for (let w = 1; w <= 12; w++) {
+        const row = (appState.weeklyBody && appState.weeklyBody[w]) || null;
+        const tr = document.createElement("tr");
+
+        if (!row) {
+          tr.innerHTML = `
+            <td><strong>Tuần ${w}</strong></td>
+            <td colspan="9" style="color:var(--text-muted);font-size:0.76rem;">Chưa ghi nhận — Chọn Tuần ${w} ở trên để nhập</td>
+          `;
+        } else {
+          const dWeight = (row.weight && base.weight) ? (row.weight - base.weight).toFixed(1) : "-";
+          const dWaist = (row.waist && base.waist) ? (row.waist - base.waist).toFixed(1) : "-";
+          const dHip = (row.hip && base.hip) ? (row.hip - base.hip).toFixed(1) : "-";
+          const whr = (row.waist && row.hip) ? (row.waist / row.hip).toFixed(2) : "-";
+          const waistPct = (row.waist && base.waist)
+            ? Math.min(100, Math.max(0, Math.round(((base.waist - row.waist) / 4.0) * 100))) + "%"
+            : "0%";
+
+          tr.innerHTML = `
+            <td><strong>Tuần ${w}</strong></td>
+            <td>${formatDateVN(row.date)}</td>
+            <td><strong>${row.weight || "-"}</strong> kg</td>
+            <td style="color:${Number(dWeight) <= 0 ? 'var(--fiber)' : 'var(--protein)'};font-weight:700;">${dWeight > 0 ? "+" + dWeight : dWeight} kg</td>
+            <td><strong>${row.waist || "-"}</strong> cm</td>
+            <td style="color:${Number(dWaist) <= 0 ? 'var(--fiber)' : 'var(--protein)'};font-weight:700;">${dWaist > 0 ? "+" + dWaist : dWaist} cm</td>
+            <td><strong>${row.hip || "-"}</strong> cm</td>
+            <td>${dHip > 0 ? "+" + dHip : dHip} cm</td>
+            <td><strong>${whr}</strong> <small style="color:var(--text-muted)">${whr !== "-" && whr < 0.8 ? "(Tối ưu)" : ""}</small></td>
+            <td><span class="badge-goal">${waistPct} mục tiêu -4cm</span></td>
+          `;
+        }
+        tr.onclick = () => {
+          document.getElementById("wkSelect").value = String(w);
+          loadWeekToForm();
+        };
+        tbody.appendChild(tr);
+      }
+    }
+
+    // =========================================================================
+    // 8. CHAT, DIARY & GOOGLE SHEETS SYNC
+    // =========================================================================
+    function renderFavoriteChips() {
+      const bar = document.getElementById("favoriteChips");
+      bar.innerHTML = "";
+      appState.favorites.forEach((fav, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "chip";
+        btn.textContent = `⚡ ${fav.name} (${fav.kcal} kcal)`;
+        btn.onclick = () => quickLogFavorite(idx);
+        bar.appendChild(btn);
+      });
+    }
+
+    function quickLogFavorite(idx) {
+      const fav = appState.favorites[idx];
+      if (!fav) return;
+      const selectedMeal = document.getElementById("mealTypeSelect").value;
+      const mealType = selectedMeal === "auto" ? (fav.mealType || guessMealByHour()) : selectedMeal;
+
+      const entry = {
+        id: "id_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        name: fav.name,
+        portion: fav.portion || "1 khẩu phần",
+        mealType: mealType,
+        kcal: fav.kcal,
+        p: fav.p,
+        c: fav.c,
+        f: fav.f,
+        fib: fav.fib || 0,
+        photo: ""
+      };
+
+      const day = getDayData(currentDate);
+      day.items.push(entry);
+      day.chats.push({ role: "user", text: `Thêm nhanh: ${fav.name}` });
+      day.chats.push({
+        role: "bot",
+        text: `Đã ghi nhận **${fav.name}** vào ${getMealLabel(mealType)}!`,
+        items: [entry]
+      });
+      saveState();
+      renderAll();
+    }
+
+    function guessMealByHour() {
+      const h = new Date().getHours();
+      if (h < 10) return "breakfast";
+      if (h < 15) return "lunch";
+      if (h < 18) return "snack";
+      return "dinner";
+    }
+
+    function getMealLabel(mealType) {
+      const map = {
+        breakfast: "🌅 Bữa sáng",
+        lunch: "☀️ Bữa trưa",
+        dinner: "🌙 Bữa tối",
+        snack: "🍎 Bữa phụ"
+      };
+      return map[mealType] || "☀️ Bữa trưa";
+    }
+
+    function detectMealTypeFromText(text, selectedMeal) {
+      if (selectedMeal && selectedMeal !== "auto") return selectedMeal;
+      const lower = text.toLowerCase();
+      if (lower.includes("sáng") || lower.includes("điểm tâm")) return "breakfast";
+      if (lower.includes("trưa")) return "lunch";
+      if (lower.includes("tối") || lower.includes("chiều tối")) return "dinner";
+      if (lower.includes("phụ") || lower.includes("ăn vặt") || lower.includes("xế") || lower.includes("trước tập") || lower.includes("sau tập")) return "snack";
+      return guessMealByHour();
+    }
+
+    function parseNaturalLanguageMeal(inputText, defaultMealType) {
+      const segments = inputText
+        .split(/[,+;\n]|(?:\bvà\b)|(?:\bvới\b)|(?:\bkèm\b)/i)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const parsedItems = [];
+
+      for (const seg of segments) {
+        const lower = seg.toLowerCase();
+        let matchedFood = null;
+        for (const food of FOOD_DB) {
+          if (food.keys.some(k => lower.includes(k))) {
+            matchedFood = food;
+            break;
+          }
+        }
+
+        if (matchedFood) {
+          let multiplier = 1;
+          let portionDesc = `1 ${matchedFood.unit} (${matchedFood.baseGrams}g)`;
+
+          const gramMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(g|gram|gr|ml)\b/i);
+          const countMatch = lower.match(/(\d+(?:[.,]\d+)?)\s*(tô|bát|chén|dĩa|đĩa|ổ|quả|trái|củ|lát|hộp|ly|cốc|muỗng|bìa|cái|cuốn|gói|nắm|phần|khẩu phần)/i);
+          const leadingNum = lower.match(/^(\d+(?:[.,]\d+)?)\s+/);
+
+          if (gramMatch) {
+            const grams = parseFloat(gramMatch[1].replace(",", "."));
+            multiplier = grams / matchedFood.baseGrams;
+            portionDesc = `${grams}g`;
+          } else if (countMatch) {
+            const count = parseFloat(countMatch[1].replace(",", "."));
+            multiplier = count;
+            portionDesc = `${count} ${countMatch[2]} (~${Math.round(count * matchedFood.baseGrams)}g)`;
+          } else if (leadingNum) {
+            const count = parseFloat(leadingNum[1].replace(",", "."));
+            if (count > 0 && count <= 10) {
+              multiplier = count;
+              portionDesc = `${count} ${matchedFood.unit} (~${Math.round(count * matchedFood.baseGrams)}g)`;
+            }
+          } else if (lower.includes("nửa ")) {
+            multiplier = 0.5;
+            portionDesc = `0.5 ${matchedFood.unit} (~${Math.round(0.5 * matchedFood.baseGrams)}g)`;
+          }
+
+          parsedItems.push({
+            id: "id_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+            name: matchedFood.name,
+            portion: portionDesc,
+            mealType: defaultMealType,
+            kcal: Math.round(matchedFood.kcal * multiplier),
+            p: Math.round(matchedFood.p * multiplier * 10) / 10,
+            c: Math.round(matchedFood.c * multiplier * 10) / 10,
+            f: Math.round(matchedFood.f * multiplier * 10) / 10,
+            fib: Math.round(matchedFood.fib * multiplier * 10) / 10,
+            photo: ""
+          });
+        } else {
+          const kcalMatch = lower.match(/(\d+)\s*(kcal|calo|cal)/i);
+          const gramMatch = lower.match(/(\d+)\s*(g|gram|gr)/i);
+          const estKcal = kcalMatch ? parseInt(kcalMatch[1], 10) : (gramMatch ? Math.round(parseInt(gramMatch[1], 10) * 1.6) : 250);
+          const cleanName = seg.replace(/^(sáng|trưa|tối|chiều|ăn vặt|bữa phụ)\s*:\s*/i, "");
+          parsedItems.push({
+            id: "id_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+            name: cleanName.charAt(0).toUpperCase() + cleanName.slice(1),
+            portion: gramMatch ? `${gramMatch[1]}g` : "1 khẩu phần",
+            mealType: defaultMealType,
+            kcal: estKcal,
+            p: Math.round((estKcal * 0.25) / 4 * 10) / 10,
+            c: Math.round((estKcal * 0.45) / 4 * 10) / 10,
+            f: Math.round((estKcal * 0.30) / 9 * 10) / 10,
+            fib: 3,
+            photo: ""
+          });
+        }
+      }
+      return parsedItems;
+    }
+
+    async function handleChatSend() {
+      const inputEl = document.getElementById("chatInput");
+      const text = inputEl.value.trim();
+      if (!text) return;
+
+      const selectedMeal = document.getElementById("mealTypeSelect").value;
+      const mealType = detectMealTypeFromText(text, selectedMeal);
+      const day = getDayData(currentDate);
+
+      const lower = text.toLowerCase();
+      if (lower.includes("tập gym") || lower.includes("có gym")) {
+        const minMatch = lower.match(/(\d+)\s*(phút|p)/i);
+        day.activityMode = "gym";
+        day.gymMins = minMatch ? parseInt(minMatch[1], 10) : 35;
+        day.chats.push({ role: "user", text });
+        day.chats.push({
+          role: "bot",
+          text: `🏋️‍♀️ Đã bật chế độ **Ngày Có Tập Gym (${day.gymMins} phút)** + 10.000 bước đi bộ! Tổng Calo Out hôm nay là **${getDayCalorieOut(currentDate).totalOut} kcal**. Mục tiêu Macro (1.500 kcal) đã tự động chỉnh sang: **Đạm 120g • Tinh bột 158g • Béo 43g**.`
+        });
+        inputEl.value = "";
+        saveState();
+        renderAll();
+        return;
+      }
+
+      day.chats.push({ role: "user", text: text });
+      inputEl.value = "";
+      renderChatMessages();
+
+      const items = parseNaturalLanguageMeal(text, mealType);
+      day.items.push(...items);
+      day.chats.push({
+        role: "bot",
+        text: `Đã tính và lưu ${items.length} món vào **${getMealLabel(mealType)}**:`,
+        items: items
+      });
+
+      saveState();
+      renderAll();
+    }
+
+    function renderChatMessages() {
+      const container = document.getElementById("chatMessages");
+      const day = getDayData(currentDate);
+      container.innerHTML = "";
+
+      day.chats.forEach(msg => {
+        const div = document.createElement("div");
+        div.className = `msg ${msg.role}`;
+
+        let html = "";
+        if (msg.photo) {
+          html += `<img src="${msg.photo}" class="msg-photo" alt="Meal photo" />`;
+        }
+        html += `<div>${msg.text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</div>`;
+
+        if (msg.items && msg.items.length > 0) {
+          html += `<div class="parsed-card">`;
+          msg.items.forEach(it => {
+            html += `
+              <div class="parsed-row">
+                <span><strong>${it.name}</strong> <small style="color:var(--text-muted)">(${it.portion})</small></span>
+                <strong style="color:var(--primary-dark)">+${it.kcal} kcal</strong>
+              </div>
+              <div class="macro-pills">
+                <span class="pill p">Đạm: ${it.p}g</span>
+                <span class="pill c">Tinh bột: ${it.c}g</span>
+                <span class="pill f">Béo: ${it.f}g</span>
+                <span class="pill fib">Xơ: ${it.fib || 0}g</span>
+              </div>
+            `;
+          });
+          html += `</div>`;
+        }
+
+        div.innerHTML = html;
+        container.appendChild(div);
+      });
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function renderDiaryMeals() {
+      const container = document.getElementById("diaryMealsContainer");
+      const day = getDayData(currentDate);
+      container.innerHTML = "";
+
+      const groups = [
+        { key: "breakfast", title: "🌅 Bữa sáng" },
+        { key: "lunch", title: "☀️ Bữa trưa" },
+        { key: "snack", title: "🍎 Bữa phụ / Trước & Sau Tập" },
+        { key: "dinner", title: "🌙 Bữa tối" }
+      ];
+
+      groups.forEach(g => {
+        const items = day.items.filter(i => i.mealType === g.key);
+        const groupKcal = items.reduce((acc, i) => acc + (Number(i.kcal) || 0), 0);
+
+        const groupDiv = document.createElement("div");
+        groupDiv.className = "meal-group";
+
+        let html = `
+          <div class="meal-group-header">
+            <span>${g.title} (${items.length})</span>
+            <span style="color:var(--primary-dark)">${groupKcal} kcal</span>
+          </div>
+          <div>
+        `;
+
+        if (items.length === 0) {
+          html += `<div class="empty-state">Chưa có món nào</div>`;
+        } else {
+          items.forEach(it => {
+            html += `
+              <div class="log-item">
+                <div class="log-item-left">
+                  ${it.photo ? `<img src="${it.photo}" class="log-thumb" alt="food" />` : ""}
+                  <div style="min-width:0;">
+                    <div class="log-info-title">${it.name}</div>
+                    <div class="log-info-sub">
+                      <span>📏 ${it.portion}</span>
+                      <span style="color:var(--protein)">P: ${it.p}g</span>
+                      <span style="color:var(--carbs)">C: ${it.c}g</span>
+                      <span style="color:var(--fat)">F: ${it.f}g</span>
+                      <span style="color:var(--fiber)">Xơ: ${it.fib || 0}g</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="log-item-right">
+                  <span class="log-kcal">${it.kcal} kcal</span>
+                  <button class="action-btn" onclick="openEditItem('${it.id}')">✏️</button>
+                  <button class="action-btn" onclick="deleteItem('${it.id}')">🗑️</button>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        html += `</div>`;
+        groupDiv.innerHTML = html;
+        container.appendChild(groupDiv);
+      });
+    }
+
+    function openManualModal() {
+      document.getElementById("manualModalTitle").textContent = "➕ Thêm Món ăn Thủ công";
+      document.getElementById("editItemId").value = "";
+      document.getElementById("manName").value = "";
+      document.getElementById("manMealType").value = guessMealByHour();
+      document.getElementById("manPortion").value = "1 khẩu phần";
+      document.getElementById("manKcal").value = 250;
+      document.getElementById("manP").value = 20;
+      document.getElementById("manC").value = 25;
+      document.getElementById("manF").value = 8;
+      document.getElementById("manFib").value = 3;
+      document.getElementById("manSaveFav").checked = false;
+      document.getElementById("manualModal").classList.add("open");
+    }
+
+    function openEditItem(itemId) {
+      const day = getDayData(currentDate);
+      const item = day.items.find(i => i.id === itemId);
+      if (!item) return;
+
+      document.getElementById("manualModalTitle").textContent = "✏️ Chỉnh sửa Khẩu phần & Macro";
+      document.getElementById("editItemId").value = item.id;
+      document.getElementById("manName").value = item.name;
+      document.getElementById("manMealType").value = item.mealType;
+      document.getElementById("manPortion").value = item.portion;
+      document.getElementById("manKcal").value = item.kcal;
+      document.getElementById("manP").value = item.p;
+      document.getElementById("manC").value = item.c;
+      document.getElementById("manF").value = item.f;
+      document.getElementById("manFib").value = item.fib || 0;
+      document.getElementById("manSaveFav").checked = false;
+      document.getElementById("manualModal").classList.add("open");
+    }
+
+    function closeManualModal() {
+      document.getElementById("manualModal").classList.remove("open");
+    }
+
+    function autoCalcManualKcal() {
+      const p = parseFloat(document.getElementById("manP").value) || 0;
+      const c = parseFloat(document.getElementById("manC").value) || 0;
+      const f = parseFloat(document.getElementById("manF").value) || 0;
+      document.getElementById("manKcal").value = Math.round(p * 4 + c * 4 + f * 9);
+    }
+
+    function saveManualEntry() {
+      const id = document.getElementById("editItemId").value;
+      const name = document.getElementById("manName").value.trim() || "Món ăn tự nhập";
+      const mealType = document.getElementById("manMealType").value;
+      const portion = document.getElementById("manPortion").value.trim() || "1 khẩu phần";
+      const kcal = Math.round(parseFloat(document.getElementById("manKcal").value) || 0);
+      const p = Math.round((parseFloat(document.getElementById("manP").value) || 0) * 10) / 10;
+      const c = Math.round((parseFloat(document.getElementById("manC").value) || 0) * 10) / 10;
+      const f = Math.round((parseFloat(document.getElementById("manF").value) || 0) * 10) / 10;
+      const fib = Math.round((parseFloat(document.getElementById("manFib").value) || 0) * 10) / 10;
+
+      const day = getDayData(currentDate);
+      if (id) {
+        const idx = day.items.findIndex(i => i.id === id);
+        if (idx !== -1) {
+          day.items[idx] = Object.assign({}, day.items[idx], { name, mealType, portion, kcal, p, c, f, fib });
+        }
+      } else {
+        day.items.push({ id: "id_" + Date.now(), name, mealType, portion, kcal, p, c, f, fib, photo: "" });
+      }
+
+      if (document.getElementById("manSaveFav").checked) {
+        appState.favorites.push({ name, portion, kcal, p, c, f, fib, mealType });
+      }
+
+      saveState();
+      closeManualModal();
+      renderAll();
+    }
+
+    function deleteItem(itemId) {
+      const day = getDayData(currentDate);
+      day.items = day.items.filter(i => i.id !== itemId);
+      saveState();
+      renderAll();
+    }
+
+    function copyYesterdayLogs() {
+      const d = new Date(currentDate + "T00:00:00");
+      d.setDate(d.getDate() - 1);
+      const offset = d.getTimezoneOffset() * 60000;
+      const yIso = new Date(d.getTime() - offset).toISOString().slice(0, 10);
+      const yData = appState.days[yIso];
+      if (!yData || !yData.items || yData.items.length === 0) {
+        alert(`Ngày hôm qua (${formatDateVN(yIso)}) chưa có dữ liệu bữa ăn.`);
+        return;
+      }
+      const day = getDayData(currentDate);
+      yData.items.forEach(it => {
+        day.items.push(Object.assign({}, it, { id: "id_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6) }));
+      });
+      saveState();
+      renderAll();
+    }
+
+    function buildDaySheetPayload(dateStr) {
+      const day = getDayData(dateStr);
+      const t = getDayTotals(dateStr);
+      const modeLabel = day.activityMode === "gym" ? "Ngày Có Tập Gym" : "Ngày Không Tập Gym";
+      const dietHint = day.activityMode === "gym"
+        ? "Tăng Đạm (120g) & Tinh bột quanh buổi tập (158g), giảm Béo (43g)"
+        : "Đạm chuẩn (110g), giảm nhẹ Tinh bột tối (140g), Béo tốt (55g)";
+      const notes = day.items.map(i => `${i.name} (${i.kcal}kcal)`).join("; ");
+      return {
+        type: "daily",
+        date: dateStr,
+        modeLabel,
+        steps: t.calOut.steps,
+        gymMins: t.calOut.gymMins,
+        walkBurn: t.calOut.walkBurn,
+        gymBurn: t.calOut.gymBurn,
+        baseBmr: t.calOut.baseBmr,
+        totalOut: t.calOut.totalOut,
+        targetCal: 1500,
+        intake: t.intake,
+        deficit: t.ActualDeficit,
+        p: t.p,
+        c: t.c,
+        f: t.f,
+        fib: t.fib,
+        water: day.water || 0,
+        dietHint,
+        notes
+      };
+    }
+
+    function copyDayRowForSheets() {
+      const p = buildDaySheetPayload(currentDate);
+      const rowTSV = [
+        p.date, p.modeLabel, p.steps, p.gymMins, p.walkBurn, p.gymBurn,
+        p.baseBmr, p.totalOut, p.targetCal, p.intake, p.deficit,
+        `${p.p}g P | ${p.c}g C | ${p.f}g F`, `${p.dietHint} — ${p.notes}`
+      ].join("\t");
+
+      navigator.clipboard.writeText(rowTSV).then(() => {
+        alert("✅ Đã copy dòng dữ liệu ngày " + formatDateVN(currentDate) + "!\nBạn chỉ cần mở trang 'Nhat_Ky_Hang_Ngay' trên Google Sheets và nhấn Ctrl+V (Dán).");
+      });
+    }
+
+    function copyWeeklyTableForSheets() {
+      const base = (appState.weeklyBody && appState.weeklyBody[1]) || { weight: 54.0, waist: 68.0, hip: 90.0 };
+      const lines = [];
+      for (let w = 1; w <= 12; w++) {
+        const r = (appState.weeklyBody && appState.weeklyBody[w]) || {};
+        const dW = (r.weight && base.weight) ? (r.weight - base.weight).toFixed(1) : "";
+        const dWaist = (r.waist && base.waist) ? (r.waist - base.waist).toFixed(1) : "";
+        const dHip = (r.hip && base.hip) ? (r.hip - base.hip).toFixed(1) : "";
+        const whr = (r.waist && row.hip) ? (r.waist / r.hip).toFixed(3) : "";
+        lines.push([`Tuần ${w}`, r.date || "", r.weight || "", dW, r.waist || "", dWaist, r.hip || "", dHip, whr, r.note || ""].join("\t"));
+      }
+      navigator.clipboard.writeText(lines.join("\n")).then(() => {
+        alert("✅ Đã copy bảng số đo Eo & Hông 12 tuần!");
+      });
+    }
+
+    async function syncDayToGoogleSheet(silent = false) {
+      const dailyPayload = buildDaySheetPayload(currentDate);
+      const webhook = (appState.webhookUrl || "").trim();
+      const badge = document.getElementById("syncStatusBadge");
+      if (!webhook) {
+        if (!silent) copyDayRowForSheets();
+        return;
+      }
+      badge.textContent = "⏳ Đang lưu Cloud...";
+      try {
+        // Strip heavy base64 photos from cloud state if large so PropertiesService stays fast and under quota
+        const stateCopy = JSON.parse(JSON.stringify(appState));
+        const fullPayload = {
+          type: "sync_all",
+          updatedAt: Date.now(),
+          daily: dailyPayload,
+          weeklyBody: appState.weeklyBody || {},
+          fullState: {
+            waterGoal: stateCopy.waterGoal,
+            favorites: stateCopy.favorites,
+            weeklyBody: stateCopy.weeklyBody,
+            days: stateCopy.days
+          }
+        };
+        await fetch(webhook, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(fullPayload)
+        });
+        badge.textContent = "🟢 Đã đồng bộ Cloud";
+        if (!silent) {
+          alert("✅ Đã đồng bộ 2 chiều lên Google Sheets & Cloud! Bạn mở trên Samsung hay Máy tính đều sẽ thấy dữ liệu mới nhất.");
+        }
+      } catch (e) {
+        badge.textContent = "⚠️ Lỗi mạng";
+        if (!silent) copyDayRowForSheets();
+      }
+    }
+
+    async function pullStateFromCloud(silent = false) {
+      const webhook = (appState.webhookUrl || "").trim();
+      const badge = document.getElementById("syncStatusBadge");
+      if (!webhook) {
+        if (!silent) alert("Bạn hãy dán Google Apps Script Web App URL trong tab '📊 Google Sheet & GitHub' trước nhé!");
+        return;
+      }
+      badge.textContent = "⏳ Đang tải Cloud...";
+      try {
+        const res = await fetch(webhook + (webhook.includes("?") ? "&" : "?") + "action=load&t=" + Date.now());
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const cloudData = await res.json();
+        if (cloudData && cloudData.days) {
+          appState.days = Object.assign({}, appState.days, cloudData.days);
+          if (cloudData.weeklyBody) appState.weeklyBody = Object.assign({}, appState.weeklyBody, cloudData.weeklyBody);
+          if (cloudData.favorites) appState.favorites = cloudData.favorites;
+          saveState();
+          renderAll();
+          badge.textContent = "🟢 Đã đồng bộ Cloud";
+          if (!silent) alert("✅ Đã tải dữ liệu mới nhất từ Cloud về thiết bị này!");
+        } else {
+          badge.textContent = "🟢 Cloud sẵn sàng";
+          if (!silent) alert("Cloud đã kết nối nhưng chưa có dữ liệu cũ — hãy nhấn '⬆️ Lưu lên Cloud' để đẩy dữ liệu lần đầu nhé!");
+        }
+      } catch (e) {
+        badge.textContent = "⚠️ Chờ đồng bộ";
+        if (!silent) alert("Không thể tải từ Cloud (hãy kiểm tra lại URL kết thúc bằng /exec và quyền truy cập 'Anyone / Bất kỳ ai').");
+      }
+    }
+
+    function saveWebhookUrl() {
+      appState.webhookUrl = document.getElementById("sheetWebhookInput").value.trim();
+      saveState();
+      if (appState.webhookUrl) {
+        pullStateFromCloud(false);
+      } else {
+        alert("Đã xóa Webhook URL.");
+      }
+    }
+
+    function copyAppsScriptCode() {
+      const codeText = document.getElementById("appsScriptCodeBox").textContent;
+      navigator.clipboard.writeText(codeText).then(() => {
+        alert("✅ Đã copy mã Code.gs! Hãy mở Google Sheets → Tiện ích mở rộng (Extensions) → Apps Script → dán đè vào và nhấn Triển khai (Deploy) → Ứng dụng web (Web app).");
+      });
+    }
+
+    function downloadReadyIndexHtml() {
+      let fullHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      const blob = new Blob([fullHtml], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "index.html";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(appState, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `nutrichat_1500kcal_backup_${currentDate}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported && imported.days) {
+            appState = Object.assign({}, defaultState, imported);
+            saveState();
+            renderAll();
+            alert("Đã khôi phục dữ liệu thành công!");
+          }
+        } catch (err) {
+          alert("File JSON không hợp lệ.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function exportCSV() {
+      const rows = [["Ngay", "Che_do_ngay", "Buoc_di_bo", "Phut_Gym", "Calo_Out_TDEE", "Muc_tieu_Calo", "Calo_Nap", "Tham_hut_Calo", "Dam_g", "Tinh_bot_g", "Beo_g", "Xo_g", "Nuoc_ml"]];
+      Object.keys(appState.days).sort().forEach(d => {
+        const p = buildDaySheetPayload(d);
+        rows.push([p.date, p.modeLabel, p.steps, p.gymMins, p.totalOut, 1500, p.intake, p.deficit, p.p, p.c, p.f, p.fib, p.water]);
+      });
+      const csvContent = "\uFEFF" + rows.map(r => r.join(",")).join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `nhat_ky_1500kcal_${currentDate}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function switchTab(tabId, btnEl) {
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById(tabId).classList.add("active");
+      if (btnEl) btnEl.classList.add("active");
+    }
+
+    window.addEventListener("DOMContentLoaded", initApp);
+  </script>
+
+
+</body></html>
